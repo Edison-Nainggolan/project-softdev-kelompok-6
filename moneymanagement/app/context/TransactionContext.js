@@ -1,43 +1,67 @@
 'use client';
 import { createContext, useContext, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-const CartContext = createContext(null);
+const TransactionContext = createContext(null);
 
-export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
+export function TransactionProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  function addToCart(product) {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
-  }
+  // Fungsi untuk mengambil data transaksi khusus Telegram ID user yang login
+  const fetchTransactions = async (telegramId) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('telegram_id', telegramId) // FILTER MULTI-USER BERDASARKAN ID TELEGRAM
+      .order('created_at', { ascending: false });
 
-  function changeQty(id, delta) {
-    setCart(prev =>
-      prev
-        .map(item => (item.id === id ? { ...item, qty: item.qty + delta } : item))
-        .filter(item => item.qty > 0)
-    );
-  }
+    if (!error && data) {
+      setTransactions(data);
+    } else {
+      console.error('Gagal mengambil data transaksi:', error);
+    }
+    setLoading(false);
+  };
 
-  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
+  // Fungsi saat user berhasil login via Telegram
+  const login = (telegramUser) => {
+    setUser(telegramUser);
+    if (telegramUser?.id) {
+      fetchTransactions(telegramUser.id);
+    }
+  };
+
+  // Fungsi logout
+  const logout = () => {
+    setUser(null);
+    setTransactions([]);
+  };
+
+  // Menghitung total pengeluaran otomatis
+  const totalExpense = transactions.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, changeQty, totalItems, totalPrice }}>
+    <TransactionContext.Provider
+      value={{
+        user,
+        transactions,
+        loading,
+        totalExpense,
+        login,
+        logout,
+        fetchTransactions
+      }}
+    >
       {children}
-    </CartContext.Provider>
+    </TransactionContext.Provider>
   );
 }
 
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart harus dipakai di dalam CartProvider');
+export function useTransaction() {
+  const ctx = useContext(TransactionContext);
+  if (!ctx) throw new Error('useTransaction harus dipakai di dalam TransactionProvider');
   return ctx;
 }
