@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { supabase } from '../../../lib/supabase'; // <-- Jembatan ke database
+import { supabase } from '../../../lib/supabase'; 
+import { ekstrakDataKeuangan } from '../../../lib/gemini'; 
 
 export const dynamic = 'force-dynamic';
 
@@ -17,61 +17,42 @@ export async function POST(request) {
     let replyMessage = '';
 
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      // 1. Panggil Gemini (Logika terpisah di file lib/gemini.js)
+      const dataKeuangan = await ekstrakDataKeuangan(userText);
       
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' }); 
-
-      const prompt = `
-        Kamu adalah asisten pencatat keuangan pintar. Tugasmu mengekstrak informasi pengeluaran dari pesan pengguna dan mengubahnya menjadi format JSON.
-        
-        Pesan pengguna: "${userText}"
-        
-        Aturan ketat:
-        1. Kategori wajib dipilih dari salah satu ini: Makanan, Transportasi, Hiburan, Belanja, Tagihan, atau Umum.
-        2. Harga (price) harus berupa angka murni (tanpa Rp, koma, atau titik). Jika pengguna menyebut "15rb" atau "20 ribu", jadikan 15000 atau 20000.
-        3. HANYA KEMBALIKAN TEKS JSON MURNI tanpa markdown (seperti \`\`\`json).
-        
-        Format JSON yang wajib diikuti:
-        {
-          "title": "nama pengeluaran singkat",
-          "price": nominal_angka,
-          "category": "Kategori Sesuai Aturan"
-        }
-      `;
-
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
-      
-      const cleanJsonText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const dataKeuangan = JSON.parse(cleanJsonText);
-      
-      // === PROSES MENYIMPAN DATA KE SUPABASE ===
-      const { error: dbError } = await supabase
-        .from('transactions')
-        .insert([
-          {
-            title: dataKeuangan.title,
-            price: dataKeuangan.price,
-            category: dataKeuangan.category
-          }
-        ]);
-
-      if (dbError) {
-        console.error('❌ ERROR DATABASE:', dbError);
-        replyMessage = `⚠️ AI berhasil membaca, tapi gagal menyimpan ke database: ${dbError.message}`;
+      // 2. Cek respon AI
+      if (dataKeuangan.error) {
+        replyMessage = dataKeuangan.error;
       } else {
-        replyMessage = `✅ Pengeluaran berhasil dicatat & disimpan ke Database!\n\n📌 Judul: ${dataKeuangan.title}\n💰 Nominal: Rp${dataKeuangan.price.toLocaleString('id-ID')}\n📂 Kategori: ${dataKeuangan.category}`;
+        // 3. Simpan ke Database (DENGAN LABEL KEPEMILIKAN MULTI-USER)
+        const { error: dbError } = await supabase
+          .from('transactions')
+          .insert([
+            {
+              telegram_id: chatId, // <-- PENAMBAHAN BARU: Label ID pengguna
+              title: dataKeuangan.title,
+              price: dataKeuangan.price,
+              category: dataKeuangan.category
+            }
+          ]);
+
+        if (dbError) throw dbError; 
+
+        replyMessage = `✅ Pengeluaran berhasil dicatat!\n\n📌 Judul: ${dataKeuangan.title}\n💰 Nominal: Rp${dataKeuangan.price.toLocaleString('id-ID')}\n📂 Kategori: ${dataKeuangan.category}`;
       }
-      // =========================================
       
-    } catch (aiError) {
-      console.error('❌ ERROR GEMINI/SISTEM:', aiError);
-      replyMessage = `Maaf, terjadi kesalahan saat memproses AI: ${aiError.message}`;
+    } catch (prosesError) {
+      console.error('❌ ERROR PROSES:', prosesError);
+      
+      if (prosesError.message?.includes('503') || prosesError.message?.includes('overloaded')) {
+        replyMessage = "Waduh, server AI sedang sibuk banget nih. Tunggu 1 menit lalu coba lagi ya. 🙏";
+      } else {
+        replyMessage = `Maaf, sistem sedang mengalami gangguan teknis.`;
+      }
     }
 
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
+    // 4. Kirim Balasan ke Telegram
+    const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
     await fetch(telegramUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
