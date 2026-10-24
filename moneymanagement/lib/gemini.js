@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Fungsi khusus untuk mengekstrak teks user jadi format JSON
 export async function ekstrakDataKeuangan(userText) {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -9,12 +8,12 @@ export async function ekstrakDataKeuangan(userText) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-  generationConfig: {
-    responseMimeType: 'application/json',
-  },
-});
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash', // Ubah ke gemini-2.0-flash atau gemini-1.5-flash-002
+    generationConfig: {
+      responseMimeType: 'application/json',
+    },
+  });
 
   const prompt = `
     Kamu adalah asisten pencatat keuangan pintar. Tugasmu mengekstrak informasi pengeluaran dari pesan pengguna dan mengubahnya menjadi format JSON.
@@ -38,6 +37,5 @@ const model = genAI.getGenerativeModel({
   const result = await model.generateContent(prompt);
   const responseText = result.response.text();
 
-  // Ubah langsung teks JSON menjadi objek JavaScript
   return JSON.parse(responseText);
-}
+}  
