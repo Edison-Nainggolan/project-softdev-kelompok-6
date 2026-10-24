@@ -9,7 +9,6 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // 1. Abaikan webhook jika bukan pesan teks, dan WAJIB kembalikan 200 OK
     if (!body.message || !body.message.text) {
       return NextResponse.json({ status: 'ignored' }, { status: 200 });
     }
@@ -19,14 +18,10 @@ export async function POST(request) {
     let replyMessage = '';
 
     try {
-      // 2. Panggil Gemini AI
       const dataKeuangan = await ekstrakDataKeuangan(userText);
-      
-      // 3. Cek respon AI
       if (dataKeuangan.error) {
         replyMessage = dataKeuangan.error;
       } else {
-        // 4. Simpan ke Database Supabase
         const { error: dbError } = await supabase
           .from('transactions')
           .insert([
@@ -58,7 +53,6 @@ export async function POST(request) {
       body: JSON.stringify({ chat_id: chatId, text: replyMessage }),
     });
 
-    // 6. KUNCI UTAMA ANTI SPAM (Wajib mengembalikan status 200)
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
   } catch (globalError) {

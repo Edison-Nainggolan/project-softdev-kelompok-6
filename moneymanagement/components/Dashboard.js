@@ -1,16 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-// Tambahkan icon Trash2 untuk tombol hapus
 import { Wallet, Receipt, X, Trash2 } from 'lucide-react'; 
 import { useTransaction } from '../app/context/TransactionContext';
 
 export default function Dashboard() {
-  // Kita tambahkan pemanggilan fungsi hapus dari context
   const { transactions, totalExpense, deleteTransaction, resetAllTransactions } = useTransaction();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Format angka ke mata uang Rupiah
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -19,7 +16,6 @@ export default function Dashboard() {
     }).format(number || 0);
   };
 
-  // Fungsi konfirmasi hapus 1 item
   const handleDeleteItem = (id, title) => {
     if (window.confirm(`Apakah kamu yakin ingin menghapus pengeluaran "${title}"?`)) {
       if (deleteTransaction) {
@@ -30,7 +26,6 @@ export default function Dashboard() {
     }
   };
 
-  // Fungsi konfirmasi reset semua data
   const handleResetAll = () => {
     if (window.confirm('⚠️ PERINGATAN!\n\nApakah kamu yakin ingin menghapus SEMUA riwayat pengeluaran? Data yang dihapus dari database tidak bisa dikembalikan.')) {
       if (resetAllTransactions) {

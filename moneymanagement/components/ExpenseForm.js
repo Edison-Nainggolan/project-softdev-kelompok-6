@@ -8,17 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useTransaction } from '../app/context/TransactionContext';
 
 export default function ExpenseForm() {
-  // Mengambil state dan fungsi penambah data dari Context
   const { transactions, addTransaction } = useTransaction();
   
   const [query, setQuery] = useState('');
   
-  // State untuk menangkap input form manual
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
 
-  // ===== FITUR SEARCH =====
-  // Logika pencariannya tetap sama, tapi sekarang mencari nama pengeluaran
   const filtered = transactions.filter(t =>
     t.title.toLowerCase().includes(query.toLowerCase())
   );
@@ -28,7 +24,6 @@ export default function ExpenseForm() {
     e.preventDefault();
     if (!title || !price) return; // Cegah input kosong
     
-    // Format data baru untuk dimasukkan ke state
     const newExpense = {
       id: Date.now(),
       title: title,
@@ -38,7 +33,6 @@ export default function ExpenseForm() {
 
     addTransaction(newExpense);
     
-    // Kosongkan form setelah berhasil disimpan
     setTitle('');
     setPrice('');
   };

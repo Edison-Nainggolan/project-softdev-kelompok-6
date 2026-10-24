@@ -9,13 +9,12 @@ export function TransactionProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fungsi untuk mengambil data transaksi khusus Telegram ID user yang login
   const fetchTransactions = async (telegramId) => {
     setLoading(true);
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
-      .eq('telegram_id', String(telegramId)) // FILTER MULTI-USER BERDASARKAN ID TELEGRAM
+      .eq('telegram_id', String(telegramId))
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -26,7 +25,7 @@ export function TransactionProvider({ children }) {
     setLoading(false);
   };
 
-  // Fungsi untuk menghapus 1 transaksi berdasarkan ID
+
   const deleteTransaction = async (transactionId) => {
     if (!user?.id) return;
     
@@ -35,13 +34,12 @@ export function TransactionProvider({ children }) {
       .from('transactions')
       .delete()
       .eq('id', transactionId)
-      .eq('telegram_id', String(user.id)); // Keamanan ekstra: Pastikan hanya miliknya yang dihapus
+      .eq('telegram_id', String(user.id));
 
     if (error) {
       console.error('Gagal menghapus transaksi:', error);
       alert('Gagal menghapus data. Coba lagi.');
     } else {
-      // Perbarui tampilan UI secara instan
       setTransactions((prev) => prev.filter((item) => item.id !== transactionId));
     }
   };
@@ -50,7 +48,6 @@ export function TransactionProvider({ children }) {
   const resetAllTransactions = async () => {
     if (!user?.id) return;
 
-    // Hapus semua data dari Supabase milik telegram_id ini
     const { error } = await supabase
       .from('transactions')
       .delete()
@@ -60,7 +57,6 @@ export function TransactionProvider({ children }) {
       console.error('Gagal mereset transaksi:', error);
       alert('Gagal mereset data. Coba lagi.');
     } else {
-      // Kosongkan tampilan daftar transaksi di UI
       setTransactions([]);
     }
   };
@@ -92,8 +88,8 @@ export function TransactionProvider({ children }) {
         login,
         logout,
         fetchTransactions,
-        deleteTransaction,     // FITUR BARU: Hapus satuan
-        resetAllTransactions // FITUR BARU: Hapus semua
+        deleteTransaction,     
+        resetAllTransactions 
       }}
     >
       {children}
