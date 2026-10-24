@@ -15,7 +15,7 @@ export function TransactionProvider({ children }) {
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
-      .eq('telegram_id', telegramId) // FILTER MULTI-USER BERDASARKAN ID TELEGRAM
+      .eq('telegram_id', String(telegramId)) // FILTER MULTI-USER BERDASARKAN ID TELEGRAM
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -24,6 +24,45 @@ export function TransactionProvider({ children }) {
       console.error('Gagal mengambil data transaksi:', error);
     }
     setLoading(false);
+  };
+
+  // Fungsi untuk menghapus 1 transaksi berdasarkan ID
+  const deleteTransaction = async (transactionId) => {
+    if (!user?.id) return;
+    
+    // Hapus dari Supabase
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', transactionId)
+      .eq('telegram_id', String(user.id)); // Keamanan ekstra: Pastikan hanya miliknya yang dihapus
+
+    if (error) {
+      console.error('Gagal menghapus transaksi:', error);
+      alert('Gagal menghapus data. Coba lagi.');
+    } else {
+      // Perbarui tampilan UI secara instan
+      setTransactions((prev) => prev.filter((item) => item.id !== transactionId));
+    }
+  };
+
+  // Fungsi untuk mereset/menghapus SEMUA transaksi milik user yang login
+  const resetAllTransactions = async () => {
+    if (!user?.id) return;
+
+    // Hapus semua data dari Supabase milik telegram_id ini
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('telegram_id', String(user.id));
+
+    if (error) {
+      console.error('Gagal mereset transaksi:', error);
+      alert('Gagal mereset data. Coba lagi.');
+    } else {
+      // Kosongkan tampilan daftar transaksi di UI
+      setTransactions([]);
+    }
   };
 
   // Fungsi saat user berhasil login via Telegram
@@ -52,7 +91,9 @@ export function TransactionProvider({ children }) {
         totalExpense,
         login,
         logout,
-        fetchTransactions
+        fetchTransactions,
+        deleteTransaction,     // FITUR BARU: Hapus satuan
+        resetAllTransactions // FITUR BARU: Hapus semua
       }}
     >
       {children}

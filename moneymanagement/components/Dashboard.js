@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Wallet, Receipt, X } from 'lucide-react';
+// Tambahkan icon Trash2 untuk tombol hapus
+import { Wallet, Receipt, X, Trash2 } from 'lucide-react'; 
 import { useTransaction } from '../app/context/TransactionContext';
 
 export default function Dashboard() {
-  const { transactions, totalExpense } = useTransaction();
+  // Kita tambahkan pemanggilan fungsi hapus dari context
+  const { transactions, totalExpense, deleteTransaction, resetAllTransactions } = useTransaction();
   const [isOpen, setIsOpen] = useState(false);
 
   // Format angka ke mata uang Rupiah
@@ -15,6 +17,28 @@ export default function Dashboard() {
       currency: 'IDR',
       minimumFractionDigits: 0,
     }).format(number || 0);
+  };
+
+  // Fungsi konfirmasi hapus 1 item
+  const handleDeleteItem = (id, title) => {
+    if (window.confirm(`Apakah kamu yakin ingin menghapus pengeluaran "${title}"?`)) {
+      if (deleteTransaction) {
+        deleteTransaction(id);
+      } else {
+        alert('Fungsi hapus sedang disiapkan di tahap selanjutnya!');
+      }
+    }
+  };
+
+  // Fungsi konfirmasi reset semua data
+  const handleResetAll = () => {
+    if (window.confirm('⚠️ PERINGATAN!\n\nApakah kamu yakin ingin menghapus SEMUA riwayat pengeluaran? Data yang dihapus dari database tidak bisa dikembalikan.')) {
+      if (resetAllTransactions) {
+        resetAllTransactions();
+      } else {
+        alert('Fungsi reset sedang disiapkan di tahap selanjutnya!');
+      }
+    }
   };
 
   return (
@@ -61,7 +85,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   {transactions.map((item, index) => (
                     <div
-                      className="flex items-center justify-between border-b border-gray-100 pb-3"
+                      className="flex items-center justify-between border-b border-gray-100 pb-3 group"
                       key={item.id || index}
                     >
                       <div className="flex flex-col">
@@ -72,8 +96,19 @@ export default function Dashboard() {
                           {item.category || 'Umum'}
                         </span>
                       </div>
-                      <div className="text-sm font-semibold text-red-500">
-                        - {formatRupiah(item.price)}
+                      
+                      {/* Bagian Harga dan Ikon Hapus */}
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-semibold text-red-500">
+                          - {formatRupiah(item.price)}
+                        </div>
+                        <button
+                          onClick={() => handleDeleteItem(item.id, item.title)}
+                          className="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                          title="Hapus item ini"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -81,15 +116,28 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Footer Total Pengeluaran */}
+            {/* Footer Total Pengeluaran & Tombol Reset */}
             <div className="border-t pt-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                  Total Pengeluaran Bulan Ini
-                </span>
-                <span className="text-2xl font-extrabold text-red-600">
-                  {formatRupiah(totalExpense)}
-                </span>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                    Total Bulan Ini
+                  </span>
+                  <span className="text-2xl font-extrabold text-red-600">
+                    {formatRupiah(totalExpense)}
+                  </span>
+                </div>
+                
+                {/* Tombol Reset Semua */}
+                {transactions.length > 0 && (
+                  <button
+                    onClick={handleResetAll}
+                    className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Reset Data
+                  </button>
+                )}
               </div>
             </div>
           </div>
