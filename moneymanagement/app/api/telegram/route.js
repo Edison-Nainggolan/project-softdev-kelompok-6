@@ -17,19 +17,19 @@ export async function POST(request) {
     let replyMessage = '';
 
     try {
-      // 1. Panggil Gemini (Logika terpisah di file lib/gemini.js)
+      // 1. Panggil Gemini AI
       const dataKeuangan = await ekstrakDataKeuangan(userText);
       
       // 2. Cek respon AI
       if (dataKeuangan.error) {
         replyMessage = dataKeuangan.error;
       } else {
-        // 3. Simpan ke Database (DENGAN LABEL KEPEMILIKAN MULTI-USER)
+        // 3. Simpan ke Database Supabase
         const { error: dbError } = await supabase
           .from('transactions')
           .insert([
             {
-              telegram_id: chatId, // <-- PENAMBAHAN BARU: Label ID pengguna
+              telegram_id: chatId,
               title: dataKeuangan.title,
               price: dataKeuangan.price,
               category: dataKeuangan.category
@@ -44,10 +44,13 @@ export async function POST(request) {
     } catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
       
-      if (prosesError.message?.includes('503') || prosesError.message?.includes('overloaded')) {
+      // Tampilkan error asli langsung di Telegram agar mudah dilacak
+      const msg = prosesError?.message || JSON.stringify(prosesError);
+      
+      if (msg.includes('503') || msg.includes('overloaded')) {
         replyMessage = "Waduh, server AI sedang sibuk banget nih. Tunggu 1 menit lalu coba lagi ya. 🙏";
       } else {
-        replyMessage = `Maaf, sistem sedang mengalami gangguan teknis.`;
+        replyMessage = `⚠️ Gangguan Teknis:\n${msg}`;
       }
     }
 

@@ -2,8 +2,19 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Fungsi khusus untuk mengekstrak teks user jadi format JSON
 export async function ekstrakDataKeuangan(userText) {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY belum terpasang di Environment Variables Vercel.');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json', // Paksa Gemini merespons dalam JSON murni
+    },
+  });
 
   const prompt = `
     Kamu adalah asisten pencatat keuangan pintar. Tugasmu mengekstrak informasi pengeluaran dari pesan pengguna dan mengubahnya menjadi format JSON.
@@ -15,7 +26,6 @@ export async function ekstrakDataKeuangan(userText) {
     2. Harga (price) harus berupa angka murni (tanpa Rp, koma, atau titik).
     3. Jika pesan pengguna TIDAK mengandung informasi pengeluaran/harga yang jelas, keluarkan format JSON ini:
        { "error": "Maaf, format pengeluaran tidak terbaca. Sebutkan nama barang dan harganya ya!" }
-    4. HANYA KEMBALIKAN TEKS JSON MURNI tanpa markdown (seperti \`\`\`json).
     
     Format JSON sukses yang wajib diikuti:
     {
@@ -27,10 +37,7 @@ export async function ekstrakDataKeuangan(userText) {
 
   const result = await model.generateContent(prompt);
   const responseText = result.response.text();
-  
-  // Bersihkan backtick jika AI masih bandel mengirim markdown
-  const cleanJsonText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-  
-  // Ubah teks menjadi objek JavaScript (JSON)
-  return JSON.parse(cleanJsonText);
+
+  // Ubah langsung teks JSON menjadi objek JavaScript
+  return JSON.parse(responseText);
 }
