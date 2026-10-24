@@ -1,39 +1,25 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
 export async function ekstrakDataKeuangan(userText) {
-  const apiKey = process.env.GROQ_API_KEY?.trim();
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) throw new Error('GEMINI_API_KEY belum terpasang.');
 
-  if (!apiKey) {
-    throw new Error('GROQ_API_KEY belum terpasang di Environment Variables Vercel.');
-  }
+  const genAI = new GoogleGenerativeAI(apiKey);
+  // Gunakan model standar yang paling stabil
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        {
-          role: 'system',
-          content: 'Kamu adalah asisten pencatat keuangan pintar. Tugasmu mengekstrak informasi pengeluaran dari pesan pengguna dan wajib mengembalikan output dalam format JSON murni tanpa teks tambahan. Aturan: 1. Kategori wajib salah satu dari: Makanan, Transportasi, Hiburan, Belanja, Tagihan, Umum. 2. Harga (price) harus angka murni tanpa titik/koma/Rp. 3. Jika tidak ada info nominal, kembalikan JSON: {"error": "Maaf, format pengeluaran tidak terbaca. Sebutkan nama barang dan harganya ya!"}. Format sukses: {"title": "nama", "price": angka, "category": "Kategori"}'
-        },
-        {
-          role: 'user',
-          content: userText
-        }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.1,
-    }),
-  });
+  const prompt = `Ekstrak informasi pengeluaran dari teks ini: "${userText}". 
+  Aturan: 
+  1. Kategori wajib salah satu dari: Makanan, Transportasi, Hiburan, Belanja, Tagihan, Umum.
+  2. Harga harus angka murni tanpa titik/koma/Rp.
+  3. Jika tidak ada nominal, balas dengan JSON: {"error": "Format tidak terbaca, sebutkan nominalnya ya!"}
+  Keluarkan HANYA format JSON murni tanpa teks lain:
+  {"title": "nama", "price": angka, "category": "Kategori"}`;
 
-  const data = await response.json();
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
 
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'Gagal terhubung ke server Groq');
-  }
-
-  const responseText = data.choices[0].message.content;
-  return JSON.parse(responseText);
+  // Bersihkan teks jika ada pembungkus markdown ```json ... ```
+  const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(cleanJson);
 }
