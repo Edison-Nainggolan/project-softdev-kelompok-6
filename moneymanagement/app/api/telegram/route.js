@@ -61,8 +61,10 @@ export async function POST(request) {
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
-  } catch (globalError) {
-    console.error('❌ ERROR GLOBAL WEBHOOK:', globalError);
-    return NextResponse.json({ status: 'error' }, { status: 200 });
-  }
+ } catch (prosesError) {
+      console.error('❌ ERROR PROSES AI/DB:', prosesError);
+      
+      // Tampilkan error asli untuk melihat penyebab gagalnya
+      replyMessage = `⚠️ DEBUG ERROR: ${prosesError.message}`;
+    }
 }
