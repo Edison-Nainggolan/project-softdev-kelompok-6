@@ -5,7 +5,6 @@ export async function ekstrakDataKeuangan(userText) {
     throw new Error('GROQ_API_KEY belum terpasang di Environment Variables Vercel.');
   }
 
-  // Menggunakan model Groq terbaru yang aktif dan stabil
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -24,7 +23,7 @@ export async function ekstrakDataKeuangan(userText) {
           content: userText
         }
       ],
-      response_format: { type: "json_object" }, // Memastikan output 100% JSON valid
+      response_format: { type: "json_object" },
       temperature: 0.1,
     }),
   });
