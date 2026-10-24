@@ -41,9 +41,7 @@ export async function POST(request) {
       
     } catch (prosesError) {
       console.error('❌ ERROR PROSES AI/DB:', prosesError);
-      
-      // MUNCULKAN ERROR ASLI KE TELEGRAM UNTUK KITA CEK BERSAMA
-      replyMessage = `⚠️ DEBUG ERROR: ${prosesError.message || JSON.stringify(prosesError)}`;
+      replyMessage = `⚠️ Terjadi kendala sistem: ${prosesError.message}`;
     }
 
     const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -54,7 +52,7 @@ export async function POST(request) {
     });
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
-
+s
   } catch (globalError) {
     console.error('❌ ERROR GLOBAL WEBHOOK:', globalError);
     return NextResponse.json({ status: 'error' }, { status: 200 });
