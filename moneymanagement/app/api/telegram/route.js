@@ -63,7 +63,7 @@ export async function POST(request) {
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
 } catch (prosesError) {
-      console.error('❌ ERROR PROSES:', prosesError);
-      replyMessage = "⚠️ Waduh, server AI Google sedang antre nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
-    }
+  console.error('❌ ERROR PROSES:', prosesError);
+  replyMessage = "⚠️ Waduh, server AI Google sedang antre nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
+}
 }
