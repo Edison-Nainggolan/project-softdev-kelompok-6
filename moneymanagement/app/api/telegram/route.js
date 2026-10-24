@@ -62,8 +62,8 @@ export async function POST(request) {
     // 6. KUNCI UTAMA ANTI SPAM
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
-  } catch (prosesError) {
+} catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
-      replyMessage = "⚠️ Waduh, server AI sedang sibuk nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
+      replyMessage = "⚠️ Waduh, server AI Google sedang antre nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
     }
 }
