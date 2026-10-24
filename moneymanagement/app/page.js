@@ -9,15 +9,13 @@ export default function Page() {
   const [telegramId, setTelegramId] = useState('');
   const [name, setName] = useState('');
 
-  // Fungsi saat tombol Masuk diklik
   const handleManualLogin = (e) => {
     e.preventDefault();
     if (!telegramId) return alert('Silakan masukkan ID Telegram!');
     
-    // Memasukkan data ke sistem (seolah-olah login dari widget)
     login({
       id: telegramId,
-      first_name: name || 'Pengguna', // Jika nama kosong, panggil 'Pengguna'
+      first_name: name || 'Pengguna',
     });
   };
 
@@ -61,7 +59,20 @@ export default function Page() {
             </button>
           </form>
 
-          <p className="text-xs text-gray-400 mt-6">
+          {/* INFO AKSES BOT DITAMBAHKAN DI SINI */}
+          <div className="mt-6 border-t pt-4">
+            <p className="text-sm text-gray-600 mb-2">Belum pernah catat pengeluaran?</p>
+            <a 
+              href="https://t.me/softdevkeuanganbot" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block w-full bg-green-50 text-green-600 font-semibold p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors"
+            >
+              🤖 Mulai Chat Bot Telegram
+            </a>
+          </div>
+
+          <p className="text-xs text-gray-400 mt-4">
             *Kirim pesan ke bot <strong>@userinfobot</strong> di Telegram untuk mengetahui ID kamu.
           </p>
         </div>
@@ -72,17 +83,29 @@ export default function Page() {
   // Tampilan 2: Jika SUDAH login
   return (
     <main className="min-h-screen bg-gray-50 p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8 border-b pb-4">
-        <div>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
+        <div className="text-center md:text-left">
           <h1 className="text-2xl font-bold text-gray-800">Halo, {user.first_name}! 👋</h1>
           <p className="text-sm text-gray-500">ID Telegram: {user.id}</p>
         </div>
-        <button 
-          onClick={() => window.location.reload()} // Tombol logout sederhana
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm font-semibold"
-        >
-          Keluar
-        </button>
+        
+        <div className="flex gap-2">
+          {/* TOMBOL PINTASAN KE BOT DARI DALAM DASHBOARD */}
+          <a 
+            href="https://t.me/softdevkeuanganbot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold flex items-center justify-center"
+          >
+            🤖 Catat Baru
+          </a>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-semibold"
+          >
+            Keluar
+          </button>
+        </div>
       </div>
       <Dashboard />
     </main>
