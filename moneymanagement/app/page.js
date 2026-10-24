@@ -44,7 +44,7 @@ export default function Page() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Nama Panggilan (Opsional)</label>
               <input
                 type="text"
-                placeholder="Contoh: Edison"
+                placeholder="Contoh: Budi"
                 className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:border-blue-500"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
