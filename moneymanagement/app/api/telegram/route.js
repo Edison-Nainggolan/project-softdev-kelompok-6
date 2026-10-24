@@ -9,7 +9,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // 1. Abaikan webhook jika bukan pesan teks, dan WAJIB kembalikan 200 OK agar Telegram tenang
+    // 1. Abaikan webhook jika bukan pesan teks, dan WAJIB kembalikan 200 OK
     if (!body.message || !body.message.text) {
       return NextResponse.json({ status: 'ignored' }, { status: 200 });
     }
@@ -26,7 +26,7 @@ export async function POST(request) {
       if (dataKeuangan.error) {
         replyMessage = dataKeuangan.error;
       } else {
-        // 4. Simpan ke Database Supabase (ID dijadikan String agar aman)
+        // 4. Simpan ke Database Supabase
         const { error: dbError } = await supabase
           .from('transactions')
           .insert([
@@ -46,8 +46,9 @@ export async function POST(request) {
     } catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
       
-      // Pesan error mentah kita matikan. Diganti dengan pesan ramah pengguna.
-      replyMessage = "⚠️ Maaf, AI sedang sibuk memproses. Coba kirim ulang dengan format: 'beli nasi goreng 15000' ya!";
+      // MUNCULKAN ERROR ASLI SEMENTARA UNTUK DEBUGGING
+      const msg = prosesError?.message || JSON.stringify(prosesError);
+      replyMessage = `⚠️ Laporan Debug:\n${msg}`;
     }
 
     // 5. Kirim Balasan ke Telegram
@@ -58,14 +59,11 @@ export async function POST(request) {
       body: JSON.stringify({ chat_id: chatId, text: replyMessage }),
     });
 
-    // 6. KUNCI UTAMA ANTI SPAM: Selalu kembalikan status 200 OK agar Telegram berhenti mengulang webhook
+    // 6. KUNCI UTAMA ANTI SPAM
     return NextResponse.json({ status: 'success' }, { status: 200 });
-} catch (prosesError) {
-      console.error('❌ ERROR PROSES:', prosesError);
-      
-      // MUNCULKAN ERROR ASLI SEMENTARA UNTUK DEBUGGING
-      const msg = prosesError?.message || JSON.stringify(prosesError);
-      replyMessage = `⚠️ Laporan Debug:\n${msg}`;
-    }
 
-    // 5. Kirim Balasan ke Telegram
+  } catch (error) {
+    console.error('❌ ERROR UTAMA:', error);
+    return NextResponse.json({ status: 'error_handled' }, { status: 200 });
+  }
+}
