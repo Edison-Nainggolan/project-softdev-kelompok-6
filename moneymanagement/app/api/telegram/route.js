@@ -60,10 +60,12 @@ export async function POST(request) {
 
     // 6. KUNCI UTAMA ANTI SPAM: Selalu kembalikan status 200 OK agar Telegram berhenti mengulang webhook
     return NextResponse.json({ status: 'success' }, { status: 200 });
+} catch (prosesError) {
+      console.error('❌ ERROR PROSES:', prosesError);
+      
+      // MUNCULKAN ERROR ASLI SEMENTARA UNTUK DEBUGGING
+      const msg = prosesError?.message || JSON.stringify(prosesError);
+      replyMessage = `⚠️ Laporan Debug:\n${msg}`;
+    }
 
-  } catch (error) {
-    console.error('❌ ERROR UTAMA:', error);
-    // Meskipun terjadi fatal error di luar dugaan, TETAP WAJIB balas 200 OK
-    return NextResponse.json({ status: 'error_handled' }, { status: 200 });
-  }
-}
+    // 5. Kirim Balasan ke Telegram
