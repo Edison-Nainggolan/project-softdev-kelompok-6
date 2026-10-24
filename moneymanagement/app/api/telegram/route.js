@@ -62,8 +62,10 @@ export async function POST(request) {
     // 6. KUNCI UTAMA ANTI SPAM
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
-  } catch (error) {
-    console.error('❌ ERROR UTAMA:', error);
-    return NextResponse.json({ status: 'error_handled' }, { status: 200 });
-  }
+  } catch (prosesError) {
+      console.error('❌ ERROR PROSES:', prosesError);
+      
+      // Kembalikan ke pesan ramah pengguna
+      replyMessage = "⚠️ Maaf, AI sedang sibuk memproses. Coba kirim ulang dengan format: 'beli nasi goreng 15000' ya!";
+    }
 }
