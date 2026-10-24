@@ -64,8 +64,6 @@ export async function POST(request) {
 
   } catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
-      
-      // Kembalikan ke pesan ramah pengguna
-      replyMessage = "⚠️ Maaf, AI sedang sibuk memproses. Coba kirim ulang dengan format: 'beli nasi goreng 15000' ya!";
+      replyMessage = "⚠️ Waduh, server AI sedang sibuk nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
     }
 }
