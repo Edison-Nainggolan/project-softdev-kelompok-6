@@ -1,7 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function ekstrakDataKeuangan(userText) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Ambil key dan hilangkan spasi yang tidak sengaja terbawa
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+
+  console.log('[DEBUG] Status GEMINI_API_KEY:', apiKey ? `Terbaca (${apiKey.substring(0, 6)}...)` : 'KOSONG');
 
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY belum terpasang di Environment Variables Vercel.');
@@ -9,7 +12,7 @@ export async function ekstrakDataKeuangan(userText) {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash', // Ubah ke gemini-2.0-flash atau gemini-1.5-flash-002
+    model: 'gemini-1.5-flash',
     generationConfig: {
       responseMimeType: 'application/json',
     },
@@ -38,4 +41,4 @@ export async function ekstrakDataKeuangan(userText) {
   const responseText = result.response.text();
 
   return JSON.parse(responseText);
-}  
+}
