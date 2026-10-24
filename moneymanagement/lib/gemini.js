@@ -5,7 +5,7 @@ export async function ekstrakDataKeuangan(userText) {
     throw new Error('GROQ_API_KEY belum terpasang di Environment Variables Vercel.');
   }
 
-  // Menggunakan API endpoint Groq (Llama 3 8B - sangat cepat & gratis)
+  // Menggunakan model Groq terbaru yang aktif dan stabil
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -13,7 +13,7 @@ export async function ekstrakDataKeuangan(userText) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
