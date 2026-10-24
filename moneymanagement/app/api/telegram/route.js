@@ -46,9 +46,8 @@ export async function POST(request) {
     } catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
       
-      // MUNCULKAN ERROR ASLI SEMENTARA UNTUK DEBUGGING
-      const msg = prosesError?.message || JSON.stringify(prosesError);
-      replyMessage = `⚠️ Laporan Debug:\n${msg}`;
+      // PESAN DEBUG DIMATIKAN, GANTI DENGAN PESAN SANTAI
+      replyMessage = "⚠️ Waduh, kuota/server bot lagi penuh nih. Tunggu sebentar lalu coba kirim lagi ya! 🙏";
     }
 
     // 5. Kirim Balasan ke Telegram
@@ -59,11 +58,11 @@ export async function POST(request) {
       body: JSON.stringify({ chat_id: chatId, text: replyMessage }),
     });
 
-    // 6. KUNCI UTAMA ANTI SPAM
+    // 6. KUNCI UTAMA ANTI SPAM (Wajib mengembalikan status 200)
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
-} catch (prosesError) {
-  console.error('❌ ERROR PROSES:', prosesError);
-  replyMessage = "⚠️ Waduh, server AI Google sedang antre nih. Tunggu 1 menit lalu coba kirim lagi ya! 🙏";
-}
+  } catch (globalError) {
+    console.error('❌ ERROR GLOBAL:', globalError);
+    return NextResponse.json({ status: 'error' }, { status: 200 });
+  }
 }
