@@ -11,9 +11,14 @@ export async function ekstrakDataKeuangan(userText) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
-});
+  
+  // PENAMBAHAN PENTING: Wajibkan output berformat JSON
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+    }
+  });
 
   const prompt = `
     Kamu adalah asisten pencatat keuangan pintar. Tugasmu mengekstrak informasi pengeluaran dari pesan pengguna dan mengubahnya menjadi format JSON.
