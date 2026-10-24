@@ -11,8 +11,8 @@ export async function ekstrakDataKeuangan(userText) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash-latest', // <-- Model sudah diubah ke versi terbaru yang didukung
+const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash',
     generationConfig: {
       responseMimeType: 'application/json',
     },

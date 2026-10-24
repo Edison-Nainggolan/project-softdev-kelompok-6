@@ -1,18 +1,17 @@
-
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase'; 
 import { ekstrakDataKeuangan } from '../../../lib/gemini'; 
 
-export const dynamic = 'force-dynamic';
-
 export async function POST(request) {
   try {
     const body = await request.json();
     
+    // 1. Abaikan webhook jika bukan pesan teks, dan WAJIB kembalikan 200 OK agar Telegram tenang
     if (!body.message || !body.message.text) {
-      return NextResponse.json({ status: 'ignored' });
+      return NextResponse.json({ status: 'ignored' }, { status: 200 });
     }
 
     const chatId = body.message.chat.id;
@@ -20,19 +19,19 @@ export async function POST(request) {
     let replyMessage = '';
 
     try {
-      // 1. Panggil Gemini AI
+      // 2. Panggil Gemini AI
       const dataKeuangan = await ekstrakDataKeuangan(userText);
       
-      // 2. Cek respon AI
+      // 3. Cek respon AI
       if (dataKeuangan.error) {
         replyMessage = dataKeuangan.error;
       } else {
-        // 3. Simpan ke Database Supabase
+        // 4. Simpan ke Database Supabase (ID dijadikan String agar aman)
         const { error: dbError } = await supabase
           .from('transactions')
           .insert([
             {
-              telegram_id: chatId,
+              telegram_id: String(chatId),
               title: dataKeuangan.title,
               price: dataKeuangan.price,
               category: dataKeuangan.category
@@ -47,17 +46,11 @@ export async function POST(request) {
     } catch (prosesError) {
       console.error('❌ ERROR PROSES:', prosesError);
       
-      // Tampilkan error asli langsung di Telegram agar mudah dilacak
-      const msg = prosesError?.message || JSON.stringify(prosesError);
-      
-      if (msg.includes('503') || msg.includes('overloaded')) {
-        replyMessage = "Waduh, server AI sedang sibuk banget nih. Tunggu 1 menit lalu coba lagi ya. 🙏";
-      } else {
-        replyMessage = `⚠️ Gangguan Teknis:\n${msg}`;
-      }
+      // Pesan error mentah kita matikan. Diganti dengan pesan ramah pengguna.
+      replyMessage = "⚠️ Maaf, AI sedang sibuk memproses. Coba kirim ulang dengan format: 'beli nasi goreng 15000' ya!";
     }
 
-    // 4. Kirim Balasan ke Telegram
+    // 5. Kirim Balasan ke Telegram
     const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
     await fetch(telegramUrl, {
       method: 'POST',
@@ -65,10 +58,12 @@ export async function POST(request) {
       body: JSON.stringify({ chat_id: chatId, text: replyMessage }),
     });
 
+    // 6. KUNCI UTAMA ANTI SPAM: Selalu kembalikan status 200 OK agar Telegram berhenti mengulang webhook
     return NextResponse.json({ status: 'success' }, { status: 200 });
 
   } catch (error) {
     console.error('❌ ERROR UTAMA:', error);
-    return NextResponse.json({ status: 'error' }, { status: 500 });
+    // Meskipun terjadi fatal error di luar dugaan, TETAP WAJIB balas 200 OK
+    return NextResponse.json({ status: 'error_handled' }, { status: 200 });
   }
 }
