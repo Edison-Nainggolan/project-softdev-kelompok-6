@@ -3,7 +3,7 @@ export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase'; 
-import { ekstrakDataKeuangan } from '../../../lib/gemini'; 
+import { ekstrakDataKeuangan } from '../../../lib/groq';
 
 export async function POST(request) {
   try {

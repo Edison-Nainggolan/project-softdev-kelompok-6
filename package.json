@@ -3,5 +3,8 @@
     "autoprefixer": "^10.6.1",
     "postcss": "^8.5.31",
     "tailwindcss": "^4.3.3"
+  },
+  "dependencies": {
+    "groq-sdk": "^1.6.0"
   }
 }
