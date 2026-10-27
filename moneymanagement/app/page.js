@@ -41,6 +41,40 @@ export default function Page() {
     fetchTransactions();
   }, [user]);
 
+  // ==========================================
+  // FUNGSI SAMPAH (HAPUS SATUAN) & RESET DATA
+  // ==========================================
+  const handleDeleteTransaction = async (id) => {
+    if (!confirm('Yakin ingin menghapus catatan transaksi ini?')) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Gagal menghapus transaksi: ' + error.message);
+    } else {
+      setTransactions((prev) => prev.filter((item) => item.id !== id));
+    }
+  };
+
+  const handleResetData = async () => {
+    if (!confirm('⚠️ PERINGATAN! Semua catatan transaksi kamu akan dihapus permanen. Yakin mau reset data?')) return;
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('telegram_id', user.id);
+
+    if (error) {
+      alert('Gagal mereset data: ' + error.message);
+    } else {
+      setTransactions([]);
+      alert('Semua data transaksi berhasil di-reset!');
+    }
+  };
+
   // Kalkulasi Keuangan Dinamis
   const totalPengeluaran = transactions.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
   
@@ -66,38 +100,12 @@ export default function Page() {
     login({ id: telegramId, first_name: name || 'Pengguna' });
   };
 
-  // Hitungan Prediksi Keuangan & Pola Boros (Taruh di dalam komponen Page)
-const now = new Date();
-const currentDay = now.getDate(); // Tanggal hari ini
-const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-const remainingDays = daysInMonth - currentDay;
-
-// Rata-rata pengeluaran per hari saat ini
-const avgDailySpend = currentDay > 0 ? totalPengeluaran / currentDay : 0;
-
-// Cari Kategori Terboros (Pola Boros)
-let maxCategory = 'Belum ada';
-let maxAmount = 0;
-Object.keys(kategoriStats).forEach((cat) => {
-  if (kategoriStats[cat] > maxAmount) {
-    maxAmount = kategoriStats[cat];
-    maxCategory = cat;
-  }
-});
-const persentaseBoros = totalPengeluaran > 0 ? Math.round((maxAmount / totalPengeluaran) * 100) : 0;
-
-// Estimasi Tanggal Uang Habis (Asumsi saldo awal misal Rp1.500.000)
-const SALDO_AWAL = 1500000;
-const sisaSaldoReal = SALDO_AWAL - totalPengeluaran;
-const estHariBertahan = avgDailySpend > 0 ? Math.floor(sisaSaldoReal / avgDailySpend) : remainingDays;
-const estTanggalHabis = Math.min(daysInMonth, currentDay + estHariBertahan);
-
   const handleLogout = () => {
     window.location.reload();
   };
 
   // ==========================================
-  // TAMPILAN 1: HALAMAN LOGIN (SESUAI WIREFRAME)
+  // TAMPILAN 1: HALAMAN LOGIN
   // ==========================================
   if (!user) {
     return (
@@ -227,21 +235,40 @@ const estTanggalHabis = Math.min(daysInMonth, currentDay + estHariBertahan);
                       <p className="text-xs font-bold">{item.title}</p>
                       <p className="text-[10px] text-gray-500">{item.category} · Telegram</p>
                     </div>
-                    <span className="text-xs font-bold">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                      <button 
+                        onClick={() => handleDeleteTransaction(item.id)}
+                        className="text-xs text-red-500 hover:text-red-700 p-1"
+                        title="Hapus Transaksi"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </motion.div>
           )}
 
-          {/* TAB 2: RIWAYAT */}
+          {/* TAB 2: RIWAYAT (FITUR SAMPAH & RESET DATA DI SINI) */}
           {activeTab === 'riwayat' && (
             <motion.div key="riwayat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <h1 className="text-2xl font-bold mb-2">Riwayat Transaksi</h1>
+              <div className="flex justify-between items-center mb-2">
+                <h1 className="text-2xl font-bold">Riwayat Transaksi</h1>
+                {transactions.length > 0 && (
+                  <button 
+                    onClick={handleResetData}
+                    className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition-colors"
+                  >
+                    🗑️ Reset Data
+                  </button>
+                )}
+              </div>
 
               {/* Filter Pills */}
               <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
-                {['Semua', 'Makanan & Minuman', 'Transportasi', 'Kuliah', 'Hiburan'].map((cat) => (
+                {['Semua', 'Makanan & Minuman', 'Transportasi', 'Kuliah', 'Hiburan', 'Umum'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedFilter(cat)}
@@ -256,18 +283,29 @@ const estTanggalHabis = Math.min(daysInMonth, currentDay + estHariBertahan);
                 ))}
               </div>
 
-              {/* List Transaksi Filtered */}
+              {/* List Transaksi dengan Tombol Hapus (Sampah) */}
               <div className="space-y-2 pt-2">
                 {filteredTransactions.length === 0 ? (
                   <p className="text-xs text-gray-400 text-center py-6">Tidak ada data transaksi.</p>
                 ) : (
                   filteredTransactions.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-xl">
+                    <div key={item.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
                       <div>
-                        <p className="text-xs font-bold">{item.title}</p>
+                        <p className="text-xs font-bold text-gray-800">{item.title}</p>
                         <p className="text-[10px] text-gray-500">{item.category}</p>
                       </div>
-                      <span className="text-xs font-bold">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-gray-900">
+                          Rp{Number(item.price).toLocaleString('id-ID')}
+                        </span>
+                        <button 
+                          onClick={() => handleDeleteTransaction(item.id)}
+                          className="text-xs text-gray-400 hover:text-red-500 p-1 transition-colors"
+                          title="Hapus"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
