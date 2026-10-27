@@ -1,0 +1,11 @@
+POST http://localhost:3000/api/telegram
+Content-Type: application/json
+
+{
+  "message": {
+    "chat": {
+      "id": 1122334455
+    },
+    "text": "beli makan nasi padang 13000"
+  }
+}
