@@ -38,7 +38,7 @@ export async function ekstrakDataKeuangan(userText) {
     Pesan pengguna: "${userText}"
     
     Aturan ketat:
-    1. Kategori wajib dipilih dari: Makanan, Transportasi, Hiburan, Belanja, Tagihan, atau Umum.
+    1. Kategori wajib dipilih HANYA dari: "Makanan & Minuman" (gunakan ini untuk semua makanan, jajanan, es teh, kopi, air mineral, dll), "Transportasi", "Hiburan", "Belanja", "Tagihan", atau "Umum".
     2. Harga (price) harus berupa angka murni.
     3. Jika tidak ada harga/barang yang jelas, kembalikan JSON ini: { "error": "Maaf, format pengeluaran tidak terbaca." }
     
