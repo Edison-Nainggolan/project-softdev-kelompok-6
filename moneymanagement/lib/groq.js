@@ -1,6 +1,9 @@
+import fs from 'fs';
 import Groq from 'groq-sdk';
 
-// Fungsi cadangan Regex (TETAP DIPERTAHANKAN sebagai pengaman)
+// ==========================================
+// 1. FUNGSI CADANGAN REGEX (Tetap dipertahankan)
+// ==========================================
 function ekstrakDenganRegex(text) {
   const angkaMatch = text.match(/\d+/g);
   if (!angkaMatch) return null;
@@ -15,6 +18,9 @@ function ekstrakDenganRegex(text) {
   };
 }
 
+// ==========================================
+// 2. FUNGSI AI TAHAP 2: TEKS KE JSON (Gemma/LLM)
+// ==========================================
 export async function ekstrakDataKeuangan(userText) {
   const apiKey = process.env.GROQ_API_KEY?.trim();
 
@@ -49,12 +55,12 @@ export async function ekstrakDataKeuangan(userText) {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔄 Percobaan ke-${attempt} memanggil Groq (Llama 3)...`);
+      console.log(`🔄 Percobaan ke-${attempt} memanggil Groq (LLM)...`);
       
       const result = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-      model: 'openai/gpt-oss-20b', // Model yang sangat cepat dan gratis
-        response_format: { type: 'json_object' } // Keunggulan Groq: memaksa output pasti berupa JSON
+        model: 'openai/gpt-oss-20b', // Model teks milikmu
+        response_format: { type: 'json_object' } 
       });
 
       const cleanJson = result.choices[0]?.message?.content || "{}";
@@ -76,4 +82,35 @@ export async function ekstrakDataKeuangan(userText) {
   }
 
   return { error: "Maaf, server AI sedang sibuk. Coba kirim ulang pesanmu ya!" };
+}
+
+// ==========================================
+// 3. FUNGSI AI TAHAP 1: SUARA KE TEKS (Whisper)
+// ==========================================
+export async function transkripVoiceNote(filePath) {
+  const apiKey = process.env.GROQ_API_KEY?.trim();
+
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY belum terpasang untuk fitur suara.');
+  }
+
+  const groq = new Groq({ apiKey: apiKey });
+
+  try {
+    console.log(`🎙️ Memproses Voice Note dari: ${filePath}...`);
+    
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(filePath), // Membaca file audio dari Telegram
+      model: "whisper-large-v3-turbo",     // Model AI tercepat & termurah Groq
+      response_format: "text",             // Langsung ambil teksnya saja
+      language: "id"                       // Fokus mengenali bahasa Indonesia
+    });
+
+    console.log(`✅ Teks berhasil ditangkap: "${transcription}"`);
+    return transcription; 
+
+  } catch (error) {
+    console.error("⚠️ Gagal memproses Voice Note:", error.message);
+    return null;
+  }
 }
