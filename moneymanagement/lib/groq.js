@@ -32,13 +32,20 @@ export async function ekstrakDataKeuangan(userText) {
 
   const groq = new Groq({ apiKey: apiKey });
 
-  const prompt = `
+const prompt = `
     Kamu adalah asisten pencatat keuangan pintar. Ekstrak informasi pengeluaran dari pesan ini dan ubah ke format JSON.
     
     Pesan pengguna: "${userText}"
     
     Aturan ketat:
-    1. Kategori wajib dipilih HANYA dari: "Makanan & Minuman" (gunakan ini untuk semua makanan, jajanan, es teh, kopi, air mineral, dll), "Transportasi", "Hiburan", "Belanja", "Tagihan", atau "Umum".
+    1. Kategori wajib dipilih HANYA dari: 
+       - "Makanan" (untuk makanan berat seperti nasi, mie, lauk pauk)
+       - "Minuman & Kopi" (untuk air mineral, es teh, kopi, boba, dan jajanan minum lainnya)
+       - "Transportasi"
+       - "Hiburan"
+       - "Belanja"
+       - "Tagihan"
+       - "Umum"
     2. Harga (price) harus berupa angka murni.
     3. Jika tidak ada harga/barang yang jelas, kembalikan JSON ini: { "error": "Maaf, format pengeluaran tidak terbaca." }
     
