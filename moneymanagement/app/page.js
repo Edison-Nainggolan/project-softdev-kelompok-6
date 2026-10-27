@@ -1,113 +1,156 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
-import { useTransaction } from './context/TransactionContext';
-import Dashboard from '../components/Dashboard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-export default function Page() {
-  const { user, login } = useTransaction();
-  const [telegramId, setTelegramId] = useState('');
-  const [name, setName] = useState('');
+// Data dummy sementara untuk Recharts (Nanti kita ganti dengan data dari Supabase)
+const dataKategori = [
+  { name: 'Makan', value: 595000, color: '#3B82F6' },     // Biru Utama (Brand)
+  { name: 'Transport', value: 80000, color: '#93C5FD' },  // Biru Secondary
+  { name: 'Kuliah', value: 165000, color: '#1E3A8A' },    // Biru Hover (Gelap)
+  { name: 'Hiburan', value: 155000, color: '#DBEAFE' },   // Biru Tertiary
+];
 
-  const handleManualLogin = (e) => {
-    e.preventDefault();
-    if (!telegramId) return alert('Silakan masukkan ID Telegram!');
-    
-    login({
-      id: telegramId,
-      first_name: name || 'Pengguna',
-    });
-  };
+export default function DashboardPage() {
+  // State untuk melacak tab mana yang sedang aktif
+  const [activeTab, setActiveTab] = useState('home');
 
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm text-center">
-          <h1 className="text-2xl font-bold mb-2 text-blue-600">Dashboard Keuangan</h1>
-          <p className="mb-6 text-gray-500 text-sm">Masukkan ID Telegram kamu untuk mengakses catatan keuangan.</p>
-          
-          <form onSubmit={handleManualLogin} className="flex flex-col gap-4 text-left">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ID Telegram (Wajib)</label>
-              <input
-                type="number"
-                placeholder="Contoh: 123456789"
-                className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:border-blue-500"
-                value={telegramId}
-                onChange={(e) => setTelegramId(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Panggilan (Opsional)</label>
-              <input
-                type="text"
-                placeholder="Contoh: Budi"
-                className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:border-blue-500"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className="w-full bg-blue-500 text-white font-semibold p-2 rounded-lg hover:bg-blue-600 transition-colors mt-2"
-            >
-              Masuk ke Dashboard
-            </button>
-          </form>
-
-          {/* INFO AKSES BOT DITAMBAHKAN DI SINI */}
-          <div className="mt-6 border-t pt-4">
-            <p className="text-sm text-gray-600 mb-2">Belum pernah catat pengeluaran?</p>
-            <a 
-              href="https://t.me/softdevkeuanganbot" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-block w-full bg-green-50 text-green-600 font-semibold p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors"
-            >
-              🤖 Mulai Chat Bot Telegram
-            </a>
+  // ==========================================
+  // KOMPONEN TAB: HOME (Menampilkan Insight & Grafik)
+  // ==========================================
+  const TabHome = () => (
+    <motion.div
+      key="home"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      className="p-5 space-y-6"
+    >
+      {/* Kartu Saldo */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <p className="text-gray-500 text-sm mb-1">Sisa saldo bulan ini</p>
+        <h2 className="text-3xl font-bold text-gray-900">Rp505.000</h2>
+        <div className="mt-4 flex gap-4 text-sm">
+          <div>
+            <p className="text-gray-400">Pengeluaran</p>
+            <p className="font-semibold text-red-500">Rp995.000</p>
           </div>
-
-          <p className="text-xs text-gray-400 mt-4">
-            *Kirim pesan ke bot <strong>@userinfobot</strong> di Telegram untuk mengetahui ID kamu.
-          </p>
         </div>
       </div>
-    );
-  }
 
-  // Tampilan 2: Jika SUDAH login
-  return (
-    <main className="min-h-screen bg-gray-50 p-6 max-w-4xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
-        <div className="text-center md:text-left">
-          <h1 className="text-2xl font-bold text-gray-800">Halo, {user.first_name}! 👋</h1>
-          <p className="text-sm text-gray-500">ID Telegram: {user.id}</p>
+      {/* Grafik Recharts: Donut Chart */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h3 className="font-semibold text-gray-800 mb-4">Pengeluaran per kategori</h3>
+        <div className="h-48 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={dataKategori}
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {dataKategori.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => `Rp${value.toLocaleString('id-ID')}`} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
         
-        <div className="flex gap-2">
-          {/* TOMBOL PINTASAN KE BOT DARI DALAM DASHBOARD */}
-          <a 
-            href="https://t.me/softdevkeuanganbot" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold flex items-center justify-center"
-          >
-            🤖 Catat Baru
-          </a>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-semibold"
-          >
-            Keluar
-          </button>
+        {/* Keterangan Warna Grafik */}
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+          {dataKategori.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+              <span className="text-gray-600">{item.name}</span>
+            </div>
+          ))}
         </div>
       </div>
-      <Dashboard />
-    </main>
+    </motion.div>
+  );
+
+  // ==========================================
+  // KOMPONEN TAB: RIWAYAT (Halaman Kosong Sementara)
+  // ==========================================
+  const TabRiwayat = () => (
+    <motion.div
+      key="riwayat"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="p-5"
+    >
+      <h2 className="text-2xl font-bold mb-4">Riwayat Transaksi</h2>
+      <p className="text-gray-500">Daftar transaksi dari Supabase akan muncul di sini.</p>
+    </motion.div>
+  );
+
+  // ==========================================
+  // RENDER UTAMA APLIKASI
+  // ==========================================
+  return (
+    // max-w-md mx-auto membuat tampilannya seperti layar HP meski dibuka di Laptop
+    <div className="min-h-screen bg-gray-50 max-w-md mx-auto relative pb-20 shadow-2xl overflow-hidden">
+      
+      {/* Header Aplikasi */}
+      <header className="bg-white px-5 py-4 border-b sticky top-0 z-10 flex justify-between items-center">
+        <h1 className="font-bold text-xl text-blue-600">FinTraces</h1>
+        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-bold">
+          UKM
+        </div>
+      </header>
+
+      {/* Area Konten Dinamis yang Berganti-ganti (Diatur oleh Framer Motion) */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'home' && <TabHome />}
+        {activeTab === 'riwayat' && <TabRiwayat />}
+        {/* Nanti kita bisa tambah activeTab === 'budget' dan 'insight' di sini */}
+      </AnimatePresence>
+
+      {/* ========================================== */}
+      {/* BOTTOM NAVIGATION (Menu Bawah) */}
+      {/* ========================================== */}
+      <nav className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around items-center py-3 px-2 pb-5">
+        <button 
+          onClick={() => setActiveTab('home')} 
+          className={`flex flex-col items-center gap-1 w-16 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-400'}`}
+        >
+          {/* Ikon Home Sederhana */}
+          <div className={`text-xl ${activeTab === 'home' ? 'scale-110 transition-transform' : ''}`}>🏠</div>
+          <span className="text-[10px] font-medium">Home</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('riwayat')} 
+          className={`flex flex-col items-center gap-1 w-16 ${activeTab === 'riwayat' ? 'text-blue-600' : 'text-gray-400'}`}
+        >
+          <div className={`text-xl ${activeTab === 'riwayat' ? 'scale-110 transition-transform' : ''}`}>📄</div>
+          <span className="text-[10px] font-medium">Riwayat</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('budget')} 
+          className={`flex flex-col items-center gap-1 w-16 ${activeTab === 'budget' ? 'text-blue-600' : 'text-gray-400'}`}
+        >
+          <div className={`text-xl ${activeTab === 'budget' ? 'scale-110 transition-transform' : ''}`}>💰</div>
+          <span className="text-[10px] font-medium">Budget</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('insight')} 
+          className={`flex flex-col items-center gap-1 w-16 ${activeTab === 'insight' ? 'text-blue-600' : 'text-gray-400'}`}
+        >
+          <div className={`text-xl ${activeTab === 'insight' ? 'scale-110 transition-transform' : ''}`}>📈</div>
+          <span className="text-[10px] font-medium">Insight</span>
+        </button>
+      </nav>
+      
+    </div>
   );
 }
