@@ -6,6 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import DonutChart from '../components/DonutChart';
 import BottomNav from '../components/BottomNav';
+import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts';
+
+// Limit Anggaran Per Kategori
+const BUDGET_LIMITS = {
+  'Makanan & Minuman': 700000,
+  'Transportasi': 200000,
+  'Kuliah': 300000,
+  'Hiburan': 150000,
+  'Umum': 300000,
+};
 
 export default function Page() {
   const { user, login } = useTransaction();
@@ -41,35 +51,19 @@ export default function Page() {
     fetchTransactions();
   }, [user]);
 
-  // ==========================================
-  // FUNGSI SAMPAH (HAPUS SATUAN) & RESET DATA
-  // ==========================================
+  // Hapus & Reset Data
   const handleDeleteTransaction = async (id) => {
     if (!confirm('Yakin ingin menghapus catatan transaksi ini?')) return;
-
-    const { error } = await supabase
-      .from('transactions')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      alert('Gagal menghapus transaksi: ' + error.message);
-    } else {
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (!error) {
       setTransactions((prev) => prev.filter((item) => item.id !== id));
     }
   };
 
   const handleResetData = async () => {
     if (!confirm('⚠️ PERINGATAN! Semua catatan transaksi kamu akan dihapus permanen. Yakin mau reset data?')) return;
-
-    const { error } = await supabase
-      .from('transactions')
-      .delete()
-      .eq('telegram_id', user.id);
-
-    if (error) {
-      alert('Gagal mereset data: ' + error.message);
-    } else {
+    const { error } = await supabase.from('transactions').delete().eq('telegram_id', user.id);
+    if (!error) {
       setTransactions([]);
       alert('Semua data transaksi berhasil di-reset!');
     }
@@ -94,19 +88,30 @@ export default function Page() {
     ? transactions
     : transactions.filter((item) => item.category === selectedFilter);
 
+  // Kalkulasi Insight AI
+  const now = new Date();
+  const currentDay = now.getDate() || 1;
+  const SALDO_AWAL = 1500000;
+  const sisaSaldo = SALDO_AWAL - totalPengeluaran;
+  const rataRataHarian = Math.round(totalPengeluaran / currentDay);
+  const sisaHariBertahan = rataRataHarian > 0 ? Math.floor(sisaSaldo / rataRataHarian) : 30;
+
+  // Cari Kategori Terboros
+  let kategoriTerboros = 'Belum ada';
+  let nominalTerboros = 0;
+  Object.keys(kategoriStats).forEach((cat) => {
+    if (kategoriStats[cat] > nominalTerboros) {
+      nominalTerboros = kategoriStats[cat];
+      kategoriTerboros = cat;
+    }
+  });
+
   const handleManualLogin = (e) => {
     e.preventDefault();
     if (!telegramId) return alert('Silakan masukkan ID Telegram kamu!');
     login({ id: telegramId, first_name: name || 'Pengguna' });
   };
 
-  const handleLogout = () => {
-    window.location.reload();
-  };
-
-  // ==========================================
-  // TAMPILAN 1: HALAMAN LOGIN
-  // ==========================================
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 font-sans text-gray-800">
@@ -174,21 +179,18 @@ export default function Page() {
     );
   }
 
-  // ==========================================
-  // TAMPILAN 2: DASBOR UTAMA 
-  // ==========================================
   return (
     <div className="min-h-screen bg-gray-100 max-w-md mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
       <div className="bg-white min-h-screen p-5 pb-20">
         
-        {/* Top Bar User Info & Logout */}
+        {/* Top Bar User Info */}
         <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
           <div>
             <h2 className="text-xs text-gray-500">Selamat Datang,</h2>
             <p className="text-sm font-bold text-gray-800">{user.first_name} ({user.id})</p>
           </div>
           <button 
-            onClick={handleLogout}
+            onClick={() => window.location.reload()}
             className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg border border-red-200 transition-colors"
           >
             Keluar
@@ -210,17 +212,11 @@ export default function Page() {
                 <p className="text-[11px] text-gray-400">{transactions.length} Transaksi Tercatat</p>
               </div>
 
-              {/* Grafik Donat Dinamis */}
               <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
                 <h3 className="text-sm font-bold mb-3">Pengeluaran per kategori</h3>
-                {dataChart.length > 0 ? (
-                  <DonutChart customData={dataChart} />
-                ) : (
-                  <p className="text-xs text-gray-400 text-center py-4">Belum ada transaksi recorded.</p>
-                )}
+                <DonutChart customData={dataChart} />
               </div>
 
-              {/* Transaksi Terakhir (3 Terbaru) */}
               <div className="pt-2">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-sm font-bold">Transaksi terakhir</h3>
@@ -235,15 +231,9 @@ export default function Page() {
                       <p className="text-xs font-bold">{item.title}</p>
                       <p className="text-[10px] text-gray-500">{item.category} · Telegram</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span className="text-xs font-bold">Rp{Number(item.price).toLocaleString('id-ID')}</span>
-                      <button 
-                        onClick={() => handleDeleteTransaction(item.id)}
-                        className="text-xs text-red-500 hover:text-red-700 p-1"
-                        title="Hapus Transaksi"
-                      >
-                        🗑️
-                      </button>
+                      <button onClick={() => handleDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500 p-1">🗑️</button>
                     </div>
                   </div>
                 ))}
@@ -251,31 +241,25 @@ export default function Page() {
             </motion.div>
           )}
 
-          {/* TAB 2: RIWAYAT (FITUR SAMPAH & RESET DATA DI SINI) */}
+          {/* TAB 2: RIWAYAT */}
           {activeTab === 'riwayat' && (
             <motion.div key="riwayat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="flex justify-between items-center mb-2">
                 <h1 className="text-2xl font-bold">Riwayat Transaksi</h1>
                 {transactions.length > 0 && (
-                  <button 
-                    onClick={handleResetData}
-                    className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition-colors"
-                  >
+                  <button onClick={handleResetData} className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200">
                     🗑️ Reset Data
                   </button>
                 )}
               </div>
 
-              {/* Filter Pills */}
               <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
                 {['Semua', 'Makanan & Minuman', 'Transportasi', 'Kuliah', 'Hiburan', 'Umum'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedFilter(cat)}
                     className={`px-3 py-1.5 rounded-full border transition-colors ${
-                      selectedFilter === cat
-                        ? 'bg-neutral-800 text-white border-neutral-800'
-                        : 'bg-white text-gray-700 border-gray-300'
+                      selectedFilter === cat ? 'bg-neutral-800 text-white border-neutral-800' : 'bg-white text-gray-700 border-gray-300'
                     }`}
                   >
                     {cat}
@@ -283,7 +267,6 @@ export default function Page() {
                 ))}
               </div>
 
-              {/* List Transaksi dengan Tombol Hapus (Sampah) */}
               <div className="space-y-2 pt-2">
                 {filteredTransactions.length === 0 ? (
                   <p className="text-xs text-gray-400 text-center py-6">Tidak ada data transaksi.</p>
@@ -295,20 +278,87 @@ export default function Page() {
                         <p className="text-[10px] text-gray-500">{item.category}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-gray-900">
-                          Rp{Number(item.price).toLocaleString('id-ID')}
-                        </span>
-                        <button 
-                          onClick={() => handleDeleteTransaction(item.id)}
-                          className="text-xs text-gray-400 hover:text-red-500 p-1 transition-colors"
-                          title="Hapus"
-                        >
-                          🗑️
-                        </button>
+                        <span className="text-xs font-bold text-gray-900">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                        <button onClick={() => handleDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500 p-1">🗑️</button>
                       </div>
                     </div>
                   ))
                 )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* TAB 3: BUDGET (OTOMATIS TAMPIL DARI SUPABASE) */}
+          {activeTab === 'budget' && (
+            <motion.div key="budget" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Budget</h1>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-2">
+                <p className="text-xs text-gray-600 font-medium">Total Terpakai Bulan Ini</p>
+                <h2 className="text-3xl font-extrabold text-gray-900">
+                  Rp{totalPengeluaran.toLocaleString('id-ID')}
+                </h2>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden my-2">
+                  <div className="bg-gray-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.round((totalPengeluaran / 1650000) * 100))}%` }}></div>
+                </div>
+                <p className="text-[11px] text-gray-500">Estimasi dari Rp1.650.000 batas batas bulanan</p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-4">
+                {Object.keys(BUDGET_LIMITS).map((catName) => {
+                  const spent = kategoriStats[catName] || 0;
+                  const limit = BUDGET_LIMITS[catName];
+                  const percent = Math.min(100, Math.round((spent / limit) * 100));
+
+                  return (
+                    <div key={catName}>
+                      <div className="flex justify-between text-xs font-bold text-gray-900 mb-1">
+                        <span>{catName}</span>
+                        <span className="text-gray-500 font-normal">Rp{spent.toLocaleString('id-ID')} / Rp{limit.toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div 
+                          className={`h-2.5 rounded-full ${percent >= 100 ? 'bg-red-600' : percent >= 80 ? 'bg-amber-500' : 'bg-gray-800'}`} 
+                          style={{ width: `${percent}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-[10px] text-gray-600 font-medium mt-1">
+                        {percent}% {percent >= 100 ? '· 🚨 Melebihi budget' : percent >= 80 ? '· ⚠️ Hampir habis' : ''}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* TAB 4: INSIGHT (ANALISIS AI OTOMATIS TAMPIL) */}
+          {activeTab === 'insight' && (
+            <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Insight</h1>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-2">
+                <p className="text-xs text-gray-600 font-medium">Ringkasan Pengeluaran</p>
+                <p className="text-xs text-gray-800 font-medium leading-relaxed">
+                  Kamu telah menghabiskan total <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>. Rata-rata harian kamu adalah <strong>Rp{rataRataHarian.toLocaleString('id-ID')}/hari</strong>.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-1">
+                <p className="text-xs text-gray-600 font-medium">Prediksi Sisa Uang</p>
+                <h2 className="text-2xl font-extrabold text-gray-900">
+                  {sisaHariBertahan > 0 ? `Bertahan ± ${sisaHariBertahan} Hari` : 'Uang Kritis!'}
+                </h2>
+                <p className="text-xs text-gray-600 leading-relaxed pt-1">
+                  Dengan pola boros saat ini, estimasi sisa uang kamu adalah <strong>Rp{Math.max(0, sisaSaldo).toLocaleString('id-ID')}</strong>.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-1">
+                <p className="text-xs text-gray-600 font-medium">Deteksi Pola Boros</p>
+                <p className="text-xs font-bold text-gray-900 pt-0.5">
+                  Pengeluaran terbesar ada pada kategori <span className="text-blue-600 font-extrabold">{kategoriTerboros}</span> sebesar Rp{nominalTerboros.toLocaleString('id-ID')}.
+                </p>
               </div>
             </motion.div>
           )}

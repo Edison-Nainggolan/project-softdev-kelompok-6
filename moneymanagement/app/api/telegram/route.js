@@ -84,7 +84,7 @@ export async function POST(request) {
 
         if (dbError) throw dbError; 
 
-        // Hitung total kategori
+        // Hitung total kategori dari database
         const { data: catTransactions } = await supabase
           .from('transactions')
           .select('price')
@@ -95,9 +95,10 @@ export async function POST(request) {
         const limitAnggaran = BUDGET_LIMITS[dataKeuangan.category] || 500000;
         const persentase = Math.round((totalTerpakai / limitAnggaran) * 100);
 
-        // Format Pesan Sesuai Wireframe
-        replyMessage = `*Tercatat*\n${dataKeuangan.category} · ${dataKeuangan.title}\n*Rp${dataKeuangan.price.toLocaleString('id-ID')}* · Hari ini`;
+        // Format balasan lengkap dengan emoji
+        replyMessage = `✅ Pengeluaran berhasil dicatat!\n\n📌 Judul: ${dataKeuangan.title}\n💰 Nominal: Rp${dataKeuangan.price.toLocaleString('id-ID')}\n📂 Kategori: ${dataKeuangan.category}`;
 
+        // Peringatan budget jika mendekati / melebihi limit
         if (persentase >= 100) {
           replyMessage += `\n\n🚨 *Peringatan:* budget ${dataKeuangan.category} sudah terpakai *${persentase}%* (Rp${totalTerpakai.toLocaleString('id-ID')}/${limitAnggaran.toLocaleString('id-ID')})!`;
         } else if (persentase >= 80) {
@@ -110,7 +111,7 @@ export async function POST(request) {
       replyMessage = `⚠️ *Terjadi Kendala Sistem*\n${prosesError.message}`;
     }
 
-    // Kirim Balasan dengan parse_mode Markdown
+    // Kirim Balasan ke Telegram
     const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
     await fetch(telegramUrl, {
       method: 'POST',
