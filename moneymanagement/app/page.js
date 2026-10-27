@@ -66,6 +66,32 @@ export default function Page() {
     login({ id: telegramId, first_name: name || 'Pengguna' });
   };
 
+  // Hitungan Prediksi Keuangan & Pola Boros (Taruh di dalam komponen Page)
+const now = new Date();
+const currentDay = now.getDate(); // Tanggal hari ini
+const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+const remainingDays = daysInMonth - currentDay;
+
+// Rata-rata pengeluaran per hari saat ini
+const avgDailySpend = currentDay > 0 ? totalPengeluaran / currentDay : 0;
+
+// Cari Kategori Terboros (Pola Boros)
+let maxCategory = 'Belum ada';
+let maxAmount = 0;
+Object.keys(kategoriStats).forEach((cat) => {
+  if (kategoriStats[cat] > maxAmount) {
+    maxAmount = kategoriStats[cat];
+    maxCategory = cat;
+  }
+});
+const persentaseBoros = totalPengeluaran > 0 ? Math.round((maxAmount / totalPengeluaran) * 100) : 0;
+
+// Estimasi Tanggal Uang Habis (Asumsi saldo awal misal Rp1.500.000)
+const SALDO_AWAL = 1500000;
+const sisaSaldoReal = SALDO_AWAL - totalPengeluaran;
+const estHariBertahan = avgDailySpend > 0 ? Math.floor(sisaSaldoReal / avgDailySpend) : remainingDays;
+const estTanggalHabis = Math.min(daysInMonth, currentDay + estHariBertahan);
+
   const handleLogout = () => {
     window.location.reload();
   };
