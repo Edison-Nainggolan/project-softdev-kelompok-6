@@ -25,18 +25,15 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedFilter, setSelectedFilter] = useState('Semua');
 
-  // State Data Transaksi & Saldo Dinamis
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saldoAwal, setSaldoAwal] = useState(1500000);
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
-  // Fetch Transaksi & Saldo Awal Pengguna
   useEffect(() => {
     if (!user?.id) return;
 
-    // Load Saldo Awal tersimpan per User ID
     const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
     if (savedSaldo) {
       setSaldoAwal(Number(savedSaldo));
@@ -61,7 +58,6 @@ export default function Page() {
     fetchTransactions();
   }, [user]);
 
-  // Simpan Saldo Awal Baru
   const handleSaveSaldo = (e) => {
     e.preventDefault();
     const nominal = Number(inputSaldo);
@@ -90,12 +86,10 @@ export default function Page() {
     }
   };
 
-  // Kalkulasi Tanggal & Hari Tersisa Bulan Ini
   const now = new Date();
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
 
-  // Kalkulasi Keuangan Real-Time
   const totalPengeluaran = transactions.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
   const sisaSaldo = saldoAwal - totalPengeluaran;
   const amanJajanHariIni = sisaSaldo > 0 ? Math.floor(sisaSaldo / sisaHari) : 0;
@@ -112,7 +106,6 @@ export default function Page() {
     display: `Rp${kategoriStats[catKey].toLocaleString('id-ID')}`,
   }));
 
-  // Filter & Grouping Tanggal Riwayat
   const filteredTransactions = selectedFilter === 'Semua'
     ? transactions
     : transactions.filter((item) => item.category === selectedFilter);
@@ -194,16 +187,16 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 max-w-md mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
-      <div className="bg-white min-h-screen p-5 pb-20">
+    <div className="min-h-screen bg-gray-100 max-w-md md:max-w-3xl lg:max-w-5xl mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
+      <div className="bg-white min-h-screen p-5 md:p-8 pb-20">
         
         {/* Header User */}
-        <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+        <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
           <div>
             <h2 className="text-xs text-gray-500">Selamat Datang,</h2>
-            <p className="text-sm font-bold text-gray-800">{user.first_name} ({user.id})</p>
+            <p className="text-sm md:text-base font-bold text-gray-800">{user.first_name} ({user.id})</p>
           </div>
-          <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg border border-red-200">
+          <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors">
             Keluar
           </button>
         </div>
@@ -212,76 +205,82 @@ export default function Page() {
           
           {/* ================= TAB 1: HOME ================= */}
           {activeTab === 'home' && (
-            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <h1 className="text-xl font-bold">Oktober 2026</h1>
+            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+              <h1 className="text-xl md:text-2xl font-bold">Oktober 2026</h1>
 
-              {/* Aman Jajan Hari Ini (Kalkulasi Otomatis) */}
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
-                <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
-                <h2 className="text-3xl font-extrabold my-1 text-gray-900">
-                  Rp{amanJajanHariIni.toLocaleString('id-ID')}
-                </h2>
-                <p className="text-[11px] text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
-              </div>
-
-              {/* Grid: Pengeluaran Bulan Ini & Sisa Saldo */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-3.5">
-                  <p className="text-[11px] text-gray-500 font-medium">Pengeluaran bulan ini</p>
-                  <p className="text-base font-bold text-gray-900 mt-1">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
+              {/* Grid 3 Kartu Ringkasan (Otomatis menyesuaikan Layar HP vs Laptop) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
+                  <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
+                  <h2 className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">
+                    Rp{amanJajanHariIni.toLocaleString('id-ID')}
+                  </h2>
+                  <p className="text-[11px] text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-3.5 relative">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
+                  <p className="text-xs text-gray-500 font-medium">Pengeluaran bulan ini</p>
+                  <p className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
+                  <p className="text-[11px] text-gray-400">{transactions.length} transaksi tercatat</p>
+                </div>
+
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 relative">
                   <div className="flex justify-between items-center">
-                    <p className="text-[11px] text-gray-500 font-medium">Sisa saldo</p>
+                    <p className="text-xs text-gray-500 font-medium">Sisa saldo</p>
                     <button 
                       onClick={() => { setInputSaldo(saldoAwal); setIsEditingSaldo(true); }}
-                      className="text-[10px] text-blue-600 font-semibold hover:underline"
+                      className="text-xs text-blue-600 font-semibold hover:underline"
                     >
-                      Atur
+                      Atur Saldo
                     </button>
                   </div>
-                  <p className="text-base font-bold text-gray-900 mt-1">Rp{sisaSaldo.toLocaleString('id-ID')}</p>
+                  <p className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">Rp{sisaSaldo.toLocaleString('id-ID')}</p>
+                  <p className="text-[11px] text-gray-400">Total awal: Rp{saldoAwal.toLocaleString('id-ID')}</p>
                 </div>
               </div>
 
-              {/* Donut Chart */}
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
-                <h3 className="text-sm font-bold mb-3">Pengeluaran per kategori</h3>
-                <DonutChart customData={dataChart} />
-              </div>
-
-              {/* Transaksi Terakhir */}
-              <div className="pt-2">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-bold">Transaksi terakhir</h3>
-                  <button onClick={() => setActiveTab('riwayat')} className="text-xs text-gray-500">Lihat semua</button>
+              {/* Layout 2 Kolom untuk Laptop (Grafik & Transaksi Berdampingan) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
+                  <h3 className="text-sm font-bold mb-4">Pengeluaran per kategori</h3>
+                  <DonutChart customData={dataChart} />
                 </div>
 
-                {loading ? (
-                  <p className="text-xs text-gray-400">Memuat data...</p>
-                ) : transactions.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-2">Belum ada data transaksi bulan ini.</p>
-                ) : transactions.slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                    <div>
-                      <p className="text-xs font-bold">{item.title}</p>
-                      <p className="text-[10px] text-gray-500">{item.category} · Telegram</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold">Rp{Number(item.price).toLocaleString('id-ID')}</span>
-                      <button onClick={() => handleDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500 p-1">🗑️</button>
-                    </div>
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold">Transaksi terakhir</h3>
+                    <button onClick={() => setActiveTab('riwayat')} className="text-xs text-blue-600 font-semibold hover:underline">Lihat semua</button>
                   </div>
-                ))}
+
+                  {loading ? (
+                    <p className="text-xs text-gray-400">Memuat data...</p>
+                  ) : transactions.length === 0 ? (
+                    <p className="text-xs text-gray-400 py-4 text-center">Belum ada data transaksi bulan ini.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {transactions.slice(0, 4).map((item) => (
+                        <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
+                          <div>
+                            <p className="text-xs font-bold text-gray-800">{item.title}</p>
+                            <p className="text-[10px] text-gray-500">{item.category} · Telegram</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-gray-900">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                            <button onClick={() => handleDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
 
           {/* ================= TAB 2: RIWAYAT ================= */}
           {activeTab === 'riwayat' && (
-            <motion.div key="riwayat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <div className="flex justify-between items-center mb-2">
+            <motion.div key="riwayat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+              <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Riwayat Transaksi</h1>
                 {transactions.length > 0 && (
                   <button onClick={handleResetData} className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200">
@@ -304,13 +303,13 @@ export default function Page() {
                 ))}
               </div>
 
-              <div className="space-y-4 pt-2">
+              <div className="space-y-6">
                 {hariIniList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Hari ini</p>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {hariIniList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -328,9 +327,9 @@ export default function Page() {
                 {kemarinList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Kemarin</p>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {kemarinList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -348,9 +347,9 @@ export default function Page() {
                 {sebelumnyaList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Sebelumnya</p>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {sebelumnyaList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -366,7 +365,7 @@ export default function Page() {
                 )}
 
                 {filteredTransactions.length === 0 && (
-                  <p className="text-xs text-gray-400 text-center py-6">Tidak ada riwayat transaksi.</p>
+                  <p className="text-xs text-gray-400 text-center py-8">Tidak ada riwayat transaksi.</p>
                 )}
               </div>
             </motion.div>
@@ -374,18 +373,18 @@ export default function Page() {
 
           {/* ================= TAB 3: BUDGET ================= */}
           {activeTab === 'budget' && (
-            <motion.div key="budget" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Budget</h1>
+            <motion.div key="budget" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+              <h1 className="text-2xl font-bold text-gray-900">Budget</h1>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-2">
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Total Terpakai Bulan Ini</p>
                 <h2 className="text-3xl font-extrabold text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</h2>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden my-2">
-                  <div className="bg-gray-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.round((totalPengeluaran / saldoAwal) * 100))}%` }}></div>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden my-2">
+                  <div className="bg-gray-800 h-3 rounded-full" style={{ width: `${Math.min(100, Math.round((totalPengeluaran / saldoAwal) * 100))}%` }}></div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-4">
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-5">
                 {Object.keys(BUDGET_LIMITS).map((catName) => {
                   const spent = kategoriStats[catName] || 0;
                   const limit = BUDGET_LIMITS[catName];
@@ -393,7 +392,7 @@ export default function Page() {
 
                   return (
                     <div key={catName}>
-                      <div className="flex justify-between text-xs font-bold text-gray-900 mb-1">
+                      <div className="flex justify-between text-xs font-bold text-gray-900 mb-1.5">
                         <span>{catName}</span>
                         <span className="text-gray-500 font-normal">Rp{spent.toLocaleString('id-ID')} / Rp{limit.toLocaleString('id-ID')}</span>
                       </div>
@@ -409,34 +408,36 @@ export default function Page() {
 
           {/* ================= TAB 4: INSIGHT ================= */}
           {activeTab === 'insight' && (
-            <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Insight</h1>
+            <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+              <h1 className="text-2xl font-bold text-gray-900">Insight</h1>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-3">
-                <p className="text-xs text-gray-600 font-medium">Ringkasan mingguan</p>
-                <p className="text-xs text-gray-800 font-medium leading-relaxed">
-                  Total pengeluaran bulan ini mencapai <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-3">
+                  <p className="text-xs text-gray-600 font-medium">Ringkasan mingguan</p>
+                  <p className="text-xs text-gray-800 font-medium leading-relaxed">
+                    Total pengeluaran bulan ini mencapai <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>.
+                  </p>
 
-                <div className="h-32 w-full pt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyData}>
-                      <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#4B5563' }} />
-                      <Tooltip formatter={(val) => `Rp${Math.round(val).toLocaleString('id-ID')}`} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="h-36 w-full pt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={weeklyData}>
+                        <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#4B5563' }} />
+                        <Tooltip formatter={(val) => `Rp${Math.round(val).toLocaleString('id-ID')}`} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-1">
-                <p className="text-xs text-gray-600 font-medium">Prediksi Sisa Saldo</p>
-                <h2 className="text-xl font-extrabold text-gray-900">
-                  {sisaSaldo > 0 ? 'Uang Cukup Aman' : 'Uang Kritis!'}
-                </h2>
-                <p className="text-xs text-gray-600 leading-relaxed pt-1">
-                  Sisa saldo kamu adalah Rp{sisaSaldo.toLocaleString('id-ID')}. Batas aman jajan harianmu adalah <strong>Rp{amanJajanHariIni.toLocaleString('id-ID')}/hari</strong>.
-                </p>
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-2 flex flex-col justify-center">
+                  <p className="text-xs text-gray-600 font-medium">Prediksi Sisa Saldo</p>
+                  <h2 className="text-2xl font-extrabold text-gray-900">
+                    {sisaSaldo > 0 ? 'Uang Cukup Aman' : 'Uang Kritis!'}
+                  </h2>
+                  <p className="text-xs text-gray-600 leading-relaxed pt-1">
+                    Sisa saldo kamu adalah <strong>Rp{sisaSaldo.toLocaleString('id-ID')}</strong>. Batas aman jajan harianmu hingga akhir bulan adalah <strong>Rp{amanJajanHariIni.toLocaleString('id-ID')}/hari</strong>.
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
