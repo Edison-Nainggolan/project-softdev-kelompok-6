@@ -18,8 +18,6 @@ const BUDGET_LIMITS = {
   'Umum': 300000,
 };
 
-const SALDO_AWAL_BULAN = 1500000; // Contoh total kiriman/saldo bulanan
-
 export default function Page() {
   const { user, login } = useTransaction();
   const [telegramId, setTelegramId] = useState('');
@@ -27,11 +25,22 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedFilter, setSelectedFilter] = useState('Semua');
 
+  // State Data Transaksi & Saldo Dinamis
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [saldoAwal, setSaldoAwal] = useState(1500000);
+  const [isEditingSaldo, setIsEditingSaldo] = useState(false);
+  const [inputSaldo, setInputSaldo] = useState('');
 
+  // Fetch Transaksi & Saldo Awal Pengguna
   useEffect(() => {
     if (!user?.id) return;
+
+    // Load Saldo Awal tersimpan per User ID
+    const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
+    if (savedSaldo) {
+      setSaldoAwal(Number(savedSaldo));
+    }
 
     async function fetchTransactions() {
       setLoading(true);
@@ -52,6 +61,18 @@ export default function Page() {
     fetchTransactions();
   }, [user]);
 
+  // Simpan Saldo Awal Baru
+  const handleSaveSaldo = (e) => {
+    e.preventDefault();
+    const nominal = Number(inputSaldo);
+    if (isNaN(nominal) || nominal < 0) return alert('Masukkan nominal angka yang valid!');
+    
+    setSaldoAwal(nominal);
+    localStorage.setItem(`saldo_awal_${user.id}`, nominal);
+    setIsEditingSaldo(false);
+    setInputSaldo('');
+  };
+
   const handleDeleteTransaction = async (id) => {
     if (!confirm('Yakin ingin menghapus catatan ini?')) return;
     const { error } = await supabase.from('transactions').delete().eq('id', id);
@@ -69,9 +90,15 @@ export default function Page() {
     }
   };
 
-  // Kalkulasi Keuangan
+  // Kalkulasi Tanggal & Hari Tersisa Bulan Ini
+  const now = new Date();
+  const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
+
+  // Kalkulasi Keuangan Real-Time
   const totalPengeluaran = transactions.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
-  const sisaSaldo = SALDO_AWAL_BULAN - totalPengeluaran;
+  const sisaSaldo = saldoAwal - totalPengeluaran;
+  const amanJajanHariIni = sisaSaldo > 0 ? Math.floor(sisaSaldo / sisaHari) : 0;
 
   const kategoriStats = transactions.reduce((acc, item) => {
     const cat = item.category || 'Umum';
@@ -85,12 +112,11 @@ export default function Page() {
     display: `Rp${kategoriStats[catKey].toLocaleString('id-ID')}`,
   }));
 
-  // Filter Riwayat
+  // Filter & Grouping Tanggal Riwayat
   const filteredTransactions = selectedFilter === 'Semua'
     ? transactions
     : transactions.filter((item) => item.category === selectedFilter);
 
-  // Grouping Tanggal untuk Riwayat
   const todayStr = new Date().toDateString();
   const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
 
@@ -101,7 +127,6 @@ export default function Page() {
     return d !== todayStr && d !== yesterdayStr;
   });
 
-  // Data Grafik Mingguan untuk Insight
   const weeklyData = [
     { day: 'Sen', amount: totalPengeluaran * 0.15 },
     { day: 'Sel', amount: totalPengeluaran * 0.1 },
@@ -190,21 +215,32 @@ export default function Page() {
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <h1 className="text-xl font-bold">Oktober 2026</h1>
 
-              {/* Aman Jajan Hari Ini */}
+              {/* Aman Jajan Hari Ini (Kalkulasi Otomatis) */}
               <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
                 <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
-                <h2 className="text-3xl font-extrabold my-1 text-gray-900">Rp50.000</h2>
-                <p className="text-[11px] text-gray-400">10 hari lagi sampai kiriman (5 Nov)</p>
+                <h2 className="text-3xl font-extrabold my-1 text-gray-900">
+                  Rp{amanJajanHariIni.toLocaleString('id-ID')}
+                </h2>
+                <p className="text-[11px] text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
               </div>
 
-              {/* Grid: Pengeluaran Bulan Ini & Sisa Saldo[cite: 11] */}
+              {/* Grid: Pengeluaran Bulan Ini & Sisa Saldo */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-3.5">
                   <p className="text-[11px] text-gray-500 font-medium">Pengeluaran bulan ini</p>
                   <p className="text-base font-bold text-gray-900 mt-1">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
                 </div>
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-3.5">
-                  <p className="text-[11px] text-gray-500 font-medium">Sisa saldo</p>
+
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-3.5 relative">
+                  <div className="flex justify-between items-center">
+                    <p className="text-[11px] text-gray-500 font-medium">Sisa saldo</p>
+                    <button 
+                      onClick={() => { setInputSaldo(saldoAwal); setIsEditingSaldo(true); }}
+                      className="text-[10px] text-blue-600 font-semibold hover:underline"
+                    >
+                      Atur
+                    </button>
+                  </div>
                   <p className="text-base font-bold text-gray-900 mt-1">Rp{sisaSaldo.toLocaleString('id-ID')}</p>
                 </div>
               </div>
@@ -224,6 +260,8 @@ export default function Page() {
 
                 {loading ? (
                   <p className="text-xs text-gray-400">Memuat data...</p>
+                ) : transactions.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-2">Belum ada data transaksi bulan ini.</p>
                 ) : transactions.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                     <div>
@@ -240,7 +278,7 @@ export default function Page() {
             </motion.div>
           )}
 
-          {/* ================= TAB 2: RIWAYAT (Dikelompokkan Berdasarkan Tanggal) ================= */}
+          {/* ================= TAB 2: RIWAYAT ================= */}
           {activeTab === 'riwayat' && (
             <motion.div key="riwayat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="flex justify-between items-center mb-2">
@@ -252,7 +290,6 @@ export default function Page() {
                 )}
               </div>
 
-              {/* Filter Kategori */}
               <div className="flex gap-2 overflow-x-auto pb-1 text-xs">
                 {['Semua', 'Makanan & Minuman', 'Transportasi', 'Kuliah', 'Hiburan', 'Umum'].map((cat) => (
                   <button
@@ -268,7 +305,6 @@ export default function Page() {
               </div>
 
               <div className="space-y-4 pt-2">
-                {/* Hari Ini */}
                 {hariIniList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Hari ini</p>
@@ -289,7 +325,6 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* Kemarin */}
                 {kemarinList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Kemarin</p>
@@ -310,7 +345,6 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* Sebelumnya */}
                 {sebelumnyaList.length > 0 && (
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-2">Sebelumnya</p>
@@ -347,7 +381,7 @@ export default function Page() {
                 <p className="text-xs text-gray-600 font-medium">Total Terpakai Bulan Ini</p>
                 <h2 className="text-3xl font-extrabold text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</h2>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden my-2">
-                  <div className="bg-gray-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.round((totalPengeluaran / 1650000) * 100))}%` }}></div>
+                  <div className="bg-gray-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.round((totalPengeluaran / saldoAwal) * 100))}%` }}></div>
                 </div>
               </div>
 
@@ -373,7 +407,7 @@ export default function Page() {
             </motion.div>
           )}
 
-          {/* ================= TAB 4: INSIGHT (Dilengkapi Grafik & Peringatan) ================= */}
+          {/* ================= TAB 4: INSIGHT ================= */}
           {activeTab === 'insight' && (
             <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Insight</h1>
@@ -381,10 +415,9 @@ export default function Page() {
               <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-3">
                 <p className="text-xs text-gray-600 font-medium">Ringkasan mingguan</p>
                 <p className="text-xs text-gray-800 font-medium leading-relaxed">
-                  Total pengeluaran bulan ini mencapai <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>. Berikut grafik tren mingguan kamu:
+                  Total pengeluaran bulan ini mencapai <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>.
                 </p>
 
-                {/* Grafik Batang Recharts */}
                 <div className="h-32 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData}>
@@ -396,20 +429,55 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* Peringatan & Prediksi */}
               <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 space-y-1">
-                <p className="text-xs text-gray-600 font-medium">Prediksi sampai kiriman</p>
+                <p className="text-xs text-gray-600 font-medium">Prediksi Sisa Saldo</p>
                 <h2 className="text-xl font-extrabold text-gray-900">
-                  {sisaSaldo > 0 ? 'Uang cukup aman' : 'Uang kritis!'}
+                  {sisaSaldo > 0 ? 'Uang Cukup Aman' : 'Uang Kritis!'}
                 </h2>
                 <p className="text-xs text-gray-600 leading-relaxed pt-1">
-                  Sisa perkiraan saldo kamu saat ini adalah Rp{sisaSaldo.toLocaleString('id-ID')}.
+                  Sisa saldo kamu adalah Rp{sisaSaldo.toLocaleString('id-ID')}. Batas aman jajan harianmu adalah <strong>Rp{amanJajanHariIni.toLocaleString('id-ID')}/hari</strong>.
                 </p>
               </div>
             </motion.div>
           )}
 
         </AnimatePresence>
+
+        {/* MODAL EDIT SALDO AWAL */}
+        {isEditingSaldo && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 w-full max-w-xs text-left space-y-4 shadow-xl">
+              <h3 className="text-base font-bold text-gray-900">Atur Uang Kiriman / Saldo Awal</h3>
+              <p className="text-xs text-gray-500">Masukkan nominal total uang sakumu untuk bulan ini.</p>
+              <form onSubmit={handleSaveSaldo} className="space-y-3">
+                <input
+                  type="number"
+                  placeholder="Contoh: 1500000"
+                  value={inputSaldo}
+                  onChange={(e) => setInputSaldo(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl p-3 text-xs focus:outline-none focus:border-gray-800"
+                  required
+                />
+                <div className="flex gap-2 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingSaldo(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl text-xs font-medium text-white bg-neutral-800 hover:bg-neutral-900"
+                  >
+                    Simpan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
 
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
