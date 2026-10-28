@@ -187,16 +187,16 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 max-w-md md:max-w-3xl lg:max-w-5xl mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
-      <div className="bg-white min-h-screen p-5 md:p-8 pb-20">
+    <div className="min-h-screen bg-gray-100 w-full max-w-7xl mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
+      <div className="bg-white min-h-screen p-6 md:p-10 pb-24">
         
         {/* Header User */}
-        <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-xs text-gray-500">Selamat Datang,</h2>
-            <p className="text-sm md:text-base font-bold text-gray-800">{user.first_name} ({user.id})</p>
+            <p className="text-base md:text-lg font-bold text-gray-800">{user.first_name} ({user.id})</p>
           </div>
-          <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors">
+          <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-lg border border-red-200 transition-colors">
             Keluar
           </button>
         </div>
@@ -206,25 +206,25 @@ export default function Page() {
           {/* ================= TAB 1: HOME ================= */}
           {activeTab === 'home' && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
-              <h1 className="text-xl md:text-2xl font-bold">Oktober 2026</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">Oktober 2026</h1>
 
-              {/* Grid 3 Kartu Ringkasan (Otomatis menyesuaikan Layar HP vs Laptop) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
+              {/* Grid 3 Kartu Ringkasan (Melebar Penuh di Laptop) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
                   <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
-                  <h2 className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">
+                  <h2 className="text-3xl lg:text-4xl font-extrabold my-2 text-gray-900">
                     Rp{amanJajanHariIni.toLocaleString('id-ID')}
                   </h2>
-                  <p className="text-[11px] text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
+                  <p className="text-xs text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
                   <p className="text-xs text-gray-500 font-medium">Pengeluaran bulan ini</p>
-                  <p className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
-                  <p className="text-[11px] text-gray-400">{transactions.length} transaksi tercatat</p>
+                  <p className="text-3xl lg:text-4xl font-extrabold my-2 text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
+                  <p className="text-xs text-gray-400">{transactions.length} transaksi tercatat</p>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-4 relative">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 relative">
                   <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-500 font-medium">Sisa saldo</p>
                     <button 
@@ -234,38 +234,38 @@ export default function Page() {
                       Atur Saldo
                     </button>
                   </div>
-                  <p className="text-2xl md:text-3xl font-extrabold my-1 text-gray-900">Rp{sisaSaldo.toLocaleString('id-ID')}</p>
-                  <p className="text-[11px] text-gray-400">Total awal: Rp{saldoAwal.toLocaleString('id-ID')}</p>
+                  <p className="text-3xl lg:text-4xl font-extrabold my-2 text-gray-900">Rp{sisaSaldo.toLocaleString('id-ID')}</p>
+                  <p className="text-xs text-gray-400">Total awal: Rp{saldoAwal.toLocaleString('id-ID')}</p>
                 </div>
               </div>
 
-              {/* Layout 2 Kolom untuk Laptop (Grafik & Transaksi Berdampingan) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold mb-4">Pengeluaran per kategori</h3>
+              {/* Layout 2 Kolom untuk Laptop */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
+                  <h3 className="text-base font-bold mb-4">Pengeluaran per kategori</h3>
                   <DonutChart customData={dataChart} />
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-bold">Transaksi terakhir</h3>
+                    <h3 className="text-base font-bold">Transaksi terakhir</h3>
                     <button onClick={() => setActiveTab('riwayat')} className="text-xs text-blue-600 font-semibold hover:underline">Lihat semua</button>
                   </div>
 
                   {loading ? (
                     <p className="text-xs text-gray-400">Memuat data...</p>
                   ) : transactions.length === 0 ? (
-                    <p className="text-xs text-gray-400 py-4 text-center">Belum ada data transaksi bulan ini.</p>
+                    <p className="text-xs text-gray-400 py-6 text-center">Belum ada data transaksi bulan ini.</p>
                   ) : (
                     <div className="space-y-3">
-                      {transactions.slice(0, 4).map((item) => (
-                        <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
+                      {transactions.slice(0, 5).map((item) => (
+                        <div key={item.id} className="flex justify-between items-center py-2.5 border-b border-gray-200 last:border-0">
                           <div>
-                            <p className="text-xs font-bold text-gray-800">{item.title}</p>
-                            <p className="text-[10px] text-gray-500">{item.category} · Telegram</p>
+                            <p className="text-xs md:text-sm font-bold text-gray-800">{item.title}</p>
+                            <p className="text-[11px] text-gray-500">{item.category} · Telegram</p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold text-gray-900">Rp{Number(item.price).toLocaleString('id-ID')}</span>
+                            <span className="text-xs md:text-sm font-bold text-gray-900">Rp{Number(item.price).toLocaleString('id-ID')}</span>
                             <button onClick={() => handleDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
                           </div>
                         </div>
@@ -283,7 +283,7 @@ export default function Page() {
               <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Riwayat Transaksi</h1>
                 {transactions.length > 0 && (
-                  <button onClick={handleResetData} className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200">
+                  <button onClick={handleResetData} className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-xl border border-red-200">
                     🗑️ Reset Data
                   </button>
                 )}
@@ -294,7 +294,7 @@ export default function Page() {
                   <button
                     key={cat}
                     onClick={() => setSelectedFilter(cat)}
-                    className={`px-3 py-1.5 rounded-full border transition-colors ${
+                    className={`px-4 py-2 rounded-full border transition-colors ${
                       selectedFilter === cat ? 'bg-neutral-800 text-white border-neutral-800' : 'bg-white text-gray-700 border-gray-300'
                     }`}
                   >
@@ -306,10 +306,10 @@ export default function Page() {
               <div className="space-y-6">
                 {hariIniList.length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-2">Hari ini</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <p className="text-xs font-bold text-gray-500 mb-3">Hari ini</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {hariIniList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -326,10 +326,10 @@ export default function Page() {
 
                 {kemarinList.length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-2">Kemarin</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <p className="text-xs font-bold text-gray-500 mb-3">Kemarin</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {kemarinList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -346,10 +346,10 @@ export default function Page() {
 
                 {sebelumnyaList.length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-2">Sebelumnya</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <p className="text-xs font-bold text-gray-500 mb-3">Sebelumnya</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {sebelumnyaList.map(item => (
-                        <div key={item.id} className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl bg-white shadow-sm">
+                        <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
                           <div>
                             <p className="text-xs font-bold text-gray-800">{item.title}</p>
                             <p className="text-[10px] text-gray-500">{item.category}</p>
@@ -376,7 +376,7 @@ export default function Page() {
             <motion.div key="budget" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
               <h1 className="text-2xl font-bold text-gray-900">Budget</h1>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-2">
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-2">
                 <p className="text-xs text-gray-600 font-medium">Total Terpakai Bulan Ini</p>
                 <h2 className="text-3xl font-extrabold text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</h2>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden my-2">
@@ -384,7 +384,7 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-5">
+              <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-5">
                 {Object.keys(BUDGET_LIMITS).map((catName) => {
                   const spent = kategoriStats[catName] || 0;
                   const limit = BUDGET_LIMITS[catName];
@@ -392,12 +392,12 @@ export default function Page() {
 
                   return (
                     <div key={catName}>
-                      <div className="flex justify-between text-xs font-bold text-gray-900 mb-1.5">
+                      <div className="flex justify-between text-xs md:text-sm font-bold text-gray-900 mb-2">
                         <span>{catName}</span>
                         <span className="text-gray-500 font-normal">Rp{spent.toLocaleString('id-ID')} / Rp{limit.toLocaleString('id-ID')}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div className={`h-2.5 rounded-full ${percent >= 100 ? 'bg-red-600' : percent >= 80 ? 'bg-amber-500' : 'bg-gray-800'}`} style={{ width: `${percent}%` }}></div>
+                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div className={`h-3 rounded-full ${percent >= 100 ? 'bg-red-600' : percent >= 80 ? 'bg-amber-500' : 'bg-gray-800'}`} style={{ width: `${percent}%` }}></div>
                       </div>
                     </div>
                   );
@@ -411,30 +411,30 @@ export default function Page() {
             <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
               <h1 className="text-2xl font-bold text-gray-900">Insight</h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3">
                   <p className="text-xs text-gray-600 font-medium">Ringkasan mingguan</p>
-                  <p className="text-xs text-gray-800 font-medium leading-relaxed">
+                  <p className="text-xs md:text-sm text-gray-800 font-medium leading-relaxed">
                     Total pengeluaran bulan ini mencapai <strong className="text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</strong>.
                   </p>
 
-                  <div className="h-36 w-full pt-2">
+                  <div className="h-44 w-full pt-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={weeklyData}>
                         <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#4B5563' }} />
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#4B5563' }} />
                         <Tooltip formatter={(val) => `Rp${Math.round(val).toLocaleString('id-ID')}`} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 space-y-2 flex flex-col justify-center">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3 flex flex-col justify-center">
                   <p className="text-xs text-gray-600 font-medium">Prediksi Sisa Saldo</p>
-                  <h2 className="text-2xl font-extrabold text-gray-900">
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">
                     {sisaSaldo > 0 ? 'Uang Cukup Aman' : 'Uang Kritis!'}
                   </h2>
-                  <p className="text-xs text-gray-600 leading-relaxed pt-1">
+                  <p className="text-xs md:text-sm text-gray-600 leading-relaxed pt-1">
                     Sisa saldo kamu adalah <strong>Rp{sisaSaldo.toLocaleString('id-ID')}</strong>. Batas aman jajan harianmu hingga akhir bulan adalah <strong>Rp{amanJajanHariIni.toLocaleString('id-ID')}/hari</strong>.
                   </p>
                 </div>
@@ -447,7 +447,7 @@ export default function Page() {
         {/* MODAL EDIT SALDO AWAL */}
         {isEditingSaldo && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 w-full max-w-xs text-left space-y-4 shadow-xl">
+            <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-left space-y-4 shadow-xl">
               <h3 className="text-base font-bold text-gray-900">Atur Uang Kiriman / Saldo Awal</h3>
               <p className="text-xs text-gray-500">Masukkan nominal total uang sakumu untuk bulan ini.</p>
               <form onSubmit={handleSaveSaldo} className="space-y-3">
