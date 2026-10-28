@@ -9,7 +9,7 @@ export default function BottomNav({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 w-full max-w-7xl mx-auto bg-white border-t border-gray-200 grid grid-cols-4 py-2.5 px-4 text-center shadow-lg z-20">
+    <nav className="fixed bottom-0 left-0 right-0 w-full max-w-[1400px] mx-auto bg-white border-t border-gray-200 grid grid-cols-4 py-2.5 px-4 text-center shadow-lg z-20">
       {menuItems.map((item) => (
         <button
           key={item.id}

@@ -31,6 +31,12 @@ export default function Page() {
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
+  // State Target Menabung Sederhana
+  const [savingGoals, setSavingGoals] = useState([
+    { id: 1, title: 'Dana Darurat Kos', target: 500000, current: 350000 },
+    { id: 2, title: 'Beli Buku & Modul', target: 200000, current: 120000 },
+  ]);
+
   useEffect(() => {
     if (!user?.id) return;
 
@@ -187,14 +193,14 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 w-full max-w-7xl mx-auto relative pb-24 shadow-xl font-sans text-gray-900">
-      <div className="bg-white min-h-screen p-6 md:p-10 pb-24">
+    <div className="min-h-screen bg-gray-100 w-full max-w-[1400px] mx-auto relative pb-28 shadow-xl font-sans text-gray-900">
+      <div className="bg-white min-h-screen p-4 sm:p-8 lg:p-12 pb-24">
         
         {/* Header User */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-xs text-gray-500">Selamat Datang,</h2>
-            <p className="text-base md:text-lg font-bold text-gray-800">{user.first_name} ({user.id})</p>
+            <p className="text-base md:text-xl font-bold text-gray-800">{user.first_name} ({user.id})</p>
           </div>
           <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-lg border border-red-200 transition-colors">
             Keluar
@@ -205,12 +211,12 @@ export default function Page() {
           
           {/* ================= TAB 1: HOME ================= */}
           {activeTab === 'home' && (
-            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
               <h1 className="text-2xl md:text-3xl font-bold">Oktober 2026</h1>
 
-              {/* Grid 3 Kartu Ringkasan (Melebar Penuh di Laptop) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
+              {/* Grid 3 Kartu Ringkasan (Full Width Responsif) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
                   <h2 className="text-3xl lg:text-4xl font-extrabold my-2 text-gray-900">
                     Rp{amanJajanHariIni.toLocaleString('id-ID')}
@@ -218,13 +224,13 @@ export default function Page() {
                   <p className="text-xs text-gray-400">{sisaHari} hari lagi dalam bulan ini</p>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <p className="text-xs text-gray-500 font-medium">Pengeluaran bulan ini</p>
                   <p className="text-3xl lg:text-4xl font-extrabold my-2 text-gray-900">Rp{totalPengeluaran.toLocaleString('id-ID')}</p>
                   <p className="text-xs text-gray-400">{transactions.length} transaksi tercatat</p>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-5 relative">
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 relative">
                   <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-500 font-medium">Sisa saldo</p>
                     <button 
@@ -239,8 +245,8 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* Layout 2 Kolom untuk Laptop */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+              {/* Layout 2 Kolom: Grafik Kategori & Transaksi Terakhir */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <h3 className="text-base font-bold mb-4">Pengeluaran per kategori</h3>
                   <DonutChart customData={dataChart} />
@@ -274,6 +280,65 @@ export default function Page() {
                   )}
                 </div>
               </div>
+
+              {/* ================= SEKSI FITUR TAMBAHAN (SCROLL KE BAWAH) ================= */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+                
+                {/* 1. Target Menabung (Saving Goals) */}
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-gray-900">🎯 Target Tabungan Bulan Ini</h3>
+                    <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md border border-blue-200">Impian</span>
+                  </div>
+                  <div className="space-y-3">
+                    {savingGoals.map((goal) => {
+                      const percent = Math.min(100, Math.round((goal.current / goal.target) * 100));
+                      return (
+                        <div key={goal.id} className="space-y-1">
+                          <div className="flex justify-between text-xs font-semibold text-gray-800">
+                            <span>{goal.title}</span>
+                            <span className="text-gray-500 font-normal">Rp{goal.current.toLocaleString('id-ID')} / Rp{goal.target.toLocaleString('id-ID')}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div className="bg-neutral-800 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Pintasan Perintah Bot Telegram */}
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3">
+                  <h3 className="text-sm font-bold text-gray-900">⚡ Perintah Cepat Bot Telegram</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Ketik perintah di bawah ini langsung di chat <strong className="text-gray-800">@softdevkeuanganbot</strong>:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                    <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-700">/saldo - Cek Sisa</div>
+                    <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-700">/riwayat - 5 Transaksi</div>
+                    <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-700">/budget - Status Kategori</div>
+                    <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-700">/insight - Tips AI</div>
+                  </div>
+                </div>
+
+                {/* 3. Tips Hemat AI & Catatan Pengingat */}
+                <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3 md:col-span-2 lg:col-span-1">
+                  <h3 className="text-sm font-bold text-gray-900">💡 Rekomendasi FinTraces AI</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {sisaSaldo > 500000 
+                      ? 'Keuangan kamu bulan ini dalam kategori aman! Pertahankan batas aman jajan harian agar tidak ada pembengkakan di akhir bulan.'
+                      : 'Perhatian! Sisa saldo kamu sudah menipis. Utamakan pengeluaran untuk kebutuhan kuliah dan makan harian saja.'}
+                  </p>
+                  <div className="pt-2 border-t border-gray-200">
+                    <p className="text-[11px] text-gray-400">
+                      *Tips: Kirim pesan suara (voice note) di Telegram untuk mencatat transaksi lebih cepat tanpa mengetik!
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
             </motion.div>
           )}
 
