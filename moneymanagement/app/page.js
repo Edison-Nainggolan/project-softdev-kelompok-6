@@ -163,6 +163,21 @@ export default function Page() {
           <p className="mb-6 text-gray-500 text-xs px-2 leading-relaxed">
             Masukkan ID Telegram kamu untuk mengakses catatan keuangan
           </p>
+
+          {/* Header User dengan Logo */}
+<div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+  <div className="flex items-center gap-3">
+    {/* Tag Gambar Logo */}
+    <img src="/logo.png" alt="FinTraces Logo" className="w-10 h-10 object-contain rounded-xl" />
+    <div>
+      <h2 className="text-xs text-gray-500">Selamat Datang,</h2>
+      <p className="text-base md:text-xl font-bold text-gray-800">{user.first_name} ({user.id})</p>
+    </div>
+  </div>
+  <button onClick={() => window.location.reload()} className="text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-lg border border-red-200 transition-colors">
+    Keluar
+  </button>
+</div>
           
           <form onSubmit={handleManualLogin} className="flex flex-col gap-4 text-left">
             <div>
