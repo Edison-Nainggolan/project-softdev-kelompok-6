@@ -10,12 +10,25 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 const BUDGET_LIMITS = {
   'Makanan & Minuman': 700000,
-  'Makan': 700000,
   'Transportasi': 200000,
-  'Transport': 200000,
   'Kuliah': 300000,
   'Hiburan': 150000,
+  'Belanja': 300000,
+  'Tagihan': 500000,
   'Umum': 300000,
+};
+
+// Fungsi normalisasi agar variasi nama kategori dari Bot terpetakan dengan presisi
+const getStandardCategory = (cat) => {
+  if (!cat) return 'Umum';
+  const c = String(cat).toLowerCase().trim();
+  if (c.includes('makan') || c.includes('minum') || c.includes('kopi')) return 'Makanan & Minuman';
+  if (c.includes('transport')) return 'Transportasi';
+  if (c.includes('kuliah') || c.includes('buku') || c.includes('foto')) return 'Kuliah';
+  if (c.includes('hibur') || c.includes('game') || c.includes('nonton')) return 'Hiburan';
+  if (c.includes('belanja') || c.includes('shop')) return 'Belanja';
+  if (c.includes('tagihan') || c.includes('kos') || c.includes('listrik')) return 'Tagihan';
+  return 'Umum';
 };
 
 export default function Page() {
@@ -31,8 +44,7 @@ export default function Page() {
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
-  // State Target Menabung Sederhana
-  const [savingGoals, setSavingGoals] = useState([
+  const [savingGoals] = useState([
     { id: 1, title: 'Dana Darurat Kos', target: 500000, current: 350000 },
     { id: 2, title: 'Beli Buku & Modul', target: 200000, current: 120000 },
   ]);
@@ -100,8 +112,9 @@ export default function Page() {
   const sisaSaldo = saldoAwal - totalPengeluaran;
   const amanJajanHariIni = sisaSaldo > 0 ? Math.floor(sisaSaldo / sisaHari) : 0;
 
+  // Hitung akumulasi statistik kategori menggunakan penyesuaian otomatis
   const kategoriStats = transactions.reduce((acc, item) => {
-    const cat = item.category || 'Umum';
+    const cat = getStandardCategory(item.category);
     acc[cat] = (acc[cat] || 0) + (Number(item.price) || 0);
     return acc;
   }, {});
@@ -114,7 +127,7 @@ export default function Page() {
 
   const filteredTransactions = selectedFilter === 'Semua'
     ? transactions
-    : transactions.filter((item) => item.category === selectedFilter);
+    : transactions.filter((item) => getStandardCategory(item.category) === getStandardCategory(selectedFilter));
 
   const todayStr = new Date().toDateString();
   const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
@@ -214,7 +227,6 @@ export default function Page() {
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
               <h1 className="text-2xl md:text-3xl font-bold">Oktober 2026</h1>
 
-              {/* Grid 3 Kartu Ringkasan (Full Width Responsif) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <p className="text-xs text-gray-500 font-medium">Aman jajan hari ini</p>
@@ -245,7 +257,6 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* Layout 2 Kolom: Grafik Kategori & Transaksi Terakhir */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
                   <h3 className="text-base font-bold mb-4">Pengeluaran per kategori</h3>
@@ -281,10 +292,7 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* ================= SEKSI FITUR TAMBAHAN (SCROLL KE BAWAH) ================= */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-                
-                {/* 1. Target Menabung (Saving Goals) */}
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-sm font-bold text-gray-900">🎯 Target Tabungan Bulan Ini</h3>
@@ -308,7 +316,6 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* 2. Pintasan Perintah Bot Telegram */}
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3">
                   <h3 className="text-sm font-bold text-gray-900">⚡ Perintah Cepat Bot Telegram</h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
@@ -322,7 +329,6 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* 3. Tips Hemat AI & Catatan Pengingat */}
                 <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3 md:col-span-2 lg:col-span-1">
                   <h3 className="text-sm font-bold text-gray-900">💡 Rekomendasi FinTraces AI</h3>
                   <p className="text-xs text-gray-600 leading-relaxed">
@@ -336,7 +342,6 @@ export default function Page() {
                     </p>
                   </div>
                 </div>
-
               </div>
 
             </motion.div>
@@ -436,7 +441,7 @@ export default function Page() {
             </motion.div>
           )}
 
-          {/* ================= TAB 3: BUDGET ================= */}
+          {/* ================= TAB 3: BUDGET (DENGAN KALKULASI PRESISI) ================= */}
           {activeTab === 'budget' && (
             <motion.div key="budget" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
               <h1 className="text-2xl font-bold text-gray-900">Budget</h1>
