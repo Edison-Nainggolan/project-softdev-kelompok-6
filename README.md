@@ -93,8 +93,8 @@ Buka [http://localhost:3000](http://localhost:3000) di browser untuk melihat has
 ---
 
 ## 👥 Tim Pengembang (Kelompok 6)
-- **Hustler / Product Manager:** [Nama Anggota]
-- **Hipster / UI-UX Designer:** [Nama Anggota]
-- **Hacker / Software Engineer:** [Nama Anggota]
+- **Hustler 
+- **Hipster
+- **Hacker
 
-*Dibuat dengan ❤️ untuk Final Project UKM Software Development 2026.*
+*Dibuat untuk Final Project UKM Software Development 2026.*
