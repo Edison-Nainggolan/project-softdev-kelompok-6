@@ -10,8 +10,8 @@ FinTraces (Financial Traces) adalah solusi pencatatan keuangan cerdas berbasis A
 
 Proyek ini dikembangkan sebagai **Final Project UKM Software Development (Softdev)** dengan fokus tema **Smart Student Productivity**.
 
-🔗 **Live Demo Dashboard:** [Tautan Vercel Kamu] (Ganti dengan link Vercel-mu, misal: https://project-softdev-kelompok-6.vercel.app)  
-🤖 **Coba Bot Telegram:** [Tautan Bot Kamu] (Ganti dengan link Bot-mu, misal: https://t.me/softdevkeuanganbot)
+🔗 **Live Demo Dashboard:
+🤖 **Coba Bot Telegram:
 
 ---
 
@@ -88,7 +88,6 @@ GROQ_API_KEY=your_groq_api_key
 ```bash
 npm run dev
 ```
-Buka [http://localhost:3000](http://localhost:3000) di browser untuk melihat hasilnya.
 
 ---
 
