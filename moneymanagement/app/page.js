@@ -100,19 +100,27 @@ export default function Page() {
     setInputSaldo('');
   };
 
-  const handleAddGoal = async (newGoal) => {
+ const handleAddGoal = async (newGoal) => {
+    const payload = {
+      telegram_id: String(user.id),
+      title: newGoal.title,
+      target: Number(newGoal.target) || 0,
+      current: Number(newGoal.current) || 0,
+      target_months: Number(newGoal.target_months) || 1,
+    };
+
     const { data, error } = await supabase
       .from('saving_goals')
-      .insert([{ ...newGoal, telegram_id: String(user.id) }])
+      .insert([payload])
       .select();
 
-    if (!error && data) {
+    if (error) {
+      console.error('Error insert goal:', error);
+      alert(`⚠️ Gagal menyimpan: ${error.message}`);
+    } else if (data && data.length > 0) {
       setSavingGoals((prev) => [...prev, data[0]]);
       setIsAddingGoal(false);
       alert('✅ Target tabungan berhasil ditambahkan!');
-    } else {
-      console.error('Error insert goal:', error);
-      alert('⚠️ Gagal menyimpan target tabungan!');
     }
   };
 
