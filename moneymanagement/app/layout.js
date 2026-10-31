@@ -27,9 +27,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id" className={`${inter.variable} ${notoSerif.variable}`}>
-      <head>
-        <link rel="icon" href="/logo.png" sizes="any" />
-      </head>
       <body className="font-sans bg-gray-50 text-gray-900 antialiased">
         <TransactionProvider>
           {children}
@@ -37,4 +34,4 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   );
-}
+}s

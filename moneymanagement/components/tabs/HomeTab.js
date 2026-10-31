@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import DonutChart from '../DonutChart';
+import TransactionCard from '../TransactionCard';
 
 export default function HomeTab({ 
   amanJajanHariIni, sisaHari, totalPengeluaran, transactions, 
@@ -60,16 +61,7 @@ export default function HomeTab({
           ) : (
             <div className="space-y-3">
               {transactions.slice(0, 5).map((item) => (
-                <div key={item.id} className="flex justify-between items-center py-2.5 border-b border-gray-200 last:border-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs md:text-sm font-bold text-gray-800 truncate">{item.title}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{item.category} · Telegram</p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs md:text-sm font-bold text-gray-900 max-w-[120px] truncate">Rp{Number(item.price).toLocaleString('id-ID')}</span>
-                    <button onClick={() => onDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
-                  </div>
-                </div>
+                <TransactionCard key={item.id} transaction={item} onDelete={onDeleteTransaction} />
               ))}
             </div>
           )}

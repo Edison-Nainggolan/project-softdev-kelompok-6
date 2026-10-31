@@ -1,3 +1,22 @@
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility helper untuk Tailwind CSS class merging
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+// Format angka ke format mata uang Rupiah
+export function formatRupiah(num) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
+// Batas anggaran bulanan per kategori
 export const BUDGET_LIMITS = {
   'Makanan & Minuman': 700000,
   'Transportasi': 200000,
@@ -8,6 +27,7 @@ export const BUDGET_LIMITS = {
   'Umum': 300000,
 };
 
+// Normalisasi variasi nama kategori dari AI/User ke kategori standar
 export const getStandardCategory = (cat) => {
   if (!cat) return 'Umum';
   const c = String(cat).toLowerCase().trim();

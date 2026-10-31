@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { getStandardCategory } from '../../lib/utils';
+import TransactionCard from '../TransactionCard';
 
 export default function RiwayatTab({ transactions, onResetData, onDeleteTransaction }) {
   const [selectedFilter, setSelectedFilter] = useState('Semua');
@@ -52,18 +53,7 @@ export default function RiwayatTab({ transactions, onResetData, onDeleteTransact
             <p className="text-xs font-bold text-gray-500 mb-3">Hari ini</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {hariIniList.map(item => (
-                <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{item.category}</p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs font-bold text-gray-900 max-w-[120px] truncate" title={`Rp${Number(item.price).toLocaleString('id-ID')}`}>
-                      Rp{Number(item.price).toLocaleString('id-ID')}
-                    </span>
-                    <button onClick={() => onDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
-                  </div>
-                </div>
+                <TransactionCard key={item.id} transaction={item} onDelete={onDeleteTransaction} />
               ))}
             </div>
           </div>
@@ -74,18 +64,7 @@ export default function RiwayatTab({ transactions, onResetData, onDeleteTransact
             <p className="text-xs font-bold text-gray-500 mb-3">Kemarin</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {kemarinList.map(item => (
-                <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{item.category}</p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs font-bold text-gray-900 max-w-[120px] truncate" title={`Rp${Number(item.price).toLocaleString('id-ID')}`}>
-                      Rp{Number(item.price).toLocaleString('id-ID')}
-                    </span>
-                    <button onClick={() => onDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
-                  </div>
-                </div>
+                <TransactionCard key={item.id} transaction={item} onDelete={onDeleteTransaction} />
               ))}
             </div>
           </div>
@@ -96,18 +75,7 @@ export default function RiwayatTab({ transactions, onResetData, onDeleteTransact
             <p className="text-xs font-bold text-gray-500 mb-3">Sebelumnya</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sebelumnyaList.map(item => (
-                <div key={item.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{item.category}</p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs font-bold text-gray-900 max-w-[120px] truncate" title={`Rp${Number(item.price).toLocaleString('id-ID')}`}>
-                      Rp{Number(item.price).toLocaleString('id-ID')}
-                    </span>
-                    <button onClick={() => onDeleteTransaction(item.id)} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
-                  </div>
-                </div>
+                <TransactionCard key={item.id} transaction={item} onDelete={onDeleteTransaction} />
               ))}
             </div>
           </div>
