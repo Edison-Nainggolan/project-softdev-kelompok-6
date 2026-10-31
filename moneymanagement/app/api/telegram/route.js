@@ -69,9 +69,7 @@ export async function POST(request) {
         userText = body.message.text.trim();
       }
 
-      // ==========================================
-      // 1. CEK APAKAH INI PERINTAH MENU (DIAWALI /)
-      // ==========================================
+      // 1. CEK PERINTAH MENU (DIAWALI /)
       if (userText.startsWith('/start') || userText.startsWith('/bantuan')) {
         replyMessage = `🤖 *Selamat Datang di FinTraces Bot!*\n\n` +
                        `Asisten pencatat keuangan pribadi kamu. Cukup ketik atau kirim *Voice Note* pengeluaranmu, contoh:\n` +
@@ -159,9 +157,7 @@ export async function POST(request) {
                        `_Tips: Kurangi jajan di kategori terbesarmu agar uang kiriman aman sampai akhir bulan!_`;
       } 
       else {
-        // ==========================================
-        // 2. JIKA BUKAN MENU, PROSES SEBAGAI PENGELUARAN VIA AI
-        // ==========================================
+        // 2. PROSES PENGELUARAN VIA AI
         const dataKeuangan = await ekstrakDataKeuangan(userText);
         
         if (dataKeuangan.error) {
