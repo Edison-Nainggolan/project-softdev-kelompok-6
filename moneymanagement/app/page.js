@@ -78,12 +78,12 @@ export default function Page() {
     }
   };
 
-  // Tampilkan form login jika user belum ada
+  // Jika user belum login, tampilkan form login Telegram dengan rapi
   if (!user) {
     return <TelegramLogin onLogin={login} />;
   }
 
-  // Perhitungan Data & Kalkulasi
+  // Kalkulasi data dashboard
   const now = new Date();
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
