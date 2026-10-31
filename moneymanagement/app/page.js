@@ -22,7 +22,7 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [saldoAwal, setSaldoAwal] = useState(0); // Default diubah ke 0
+  const [saldoAwal, setSaldoAwal] = useState(0);
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
@@ -34,16 +34,25 @@ export default function Page() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Ambil saldo tersimpan atau tetapkan default Rp0
-    const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
-    if (savedSaldo !== null) {
-      setSaldoAwal(Number(savedSaldo));
-    } else {
-      setSaldoAwal(0);
-    }
-
-    async function fetchTransactions() {
+    async function fetchData() {
       setLoading(true);
+
+      // 1. Ambil Saldo Awal dari Supabase (supaya sinkron antar HP & Laptop)
+      const { data: settingData, error: settingError } = await supabase
+        .from('user_settings')
+        .select('saldo_awal')
+        .eq('telegram_id', String(user.id))
+        .single();
+
+      if (!settingError && settingData) {
+        setSaldoAwal(Number(settingData.saldo_awal) || 0);
+      } else {
+        // Fallback ke localStorage jika tabel Supabase belum siap
+        const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
+        setSaldoAwal(savedSaldo !== null ? Number(savedSaldo) : 0);
+      }
+
+      // 2. Ambil Data Transaksi
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
@@ -54,16 +63,22 @@ export default function Page() {
       setLoading(false);
     }
 
-    fetchTransactions();
+    fetchData();
   }, [user]);
 
-  const handleSaveSaldo = (e) => {
+  const handleSaveSaldo = async (e) => {
     e.preventDefault();
     const nominal = Number(inputSaldo);
     if (isNaN(nominal) || nominal < 0) return alert('Masukkan nominal yang valid!');
-    
+
     setSaldoAwal(nominal);
     localStorage.setItem(`saldo_awal_${user.id}`, nominal);
+
+    // Simpan ke Supabase agar tersinkronisasi di perangkat lain
+    await supabase
+      .from('user_settings')
+      .upsert({ telegram_id: String(user.id), saldo_awal: nominal }, { onConflict: 'telegram_id' });
+
     setIsEditingSaldo(false);
     setInputSaldo('');
   };
