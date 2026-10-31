@@ -37,17 +37,16 @@ export default function Page() {
     async function fetchData() {
       setLoading(true);
 
-      // 1. Ambil Saldo Awal dari Supabase (supaya sinkron antar HP & Laptop)
+      // 1. Ambil Saldo Awal via maybeSingle() agar aman jika data belum ada di Supabase
       const { data: settingData, error: settingError } = await supabase
         .from('user_settings')
         .select('saldo_awal')
         .eq('telegram_id', String(user.id))
-        .single();
+        .maybeSingle();
 
       if (!settingError && settingData) {
         setSaldoAwal(Number(settingData.saldo_awal) || 0);
       } else {
-        // Fallback ke localStorage jika tabel Supabase belum siap
         const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
         setSaldoAwal(savedSaldo !== null ? Number(savedSaldo) : 0);
       }
@@ -74,10 +73,20 @@ export default function Page() {
     setSaldoAwal(nominal);
     localStorage.setItem(`saldo_awal_${user.id}`, nominal);
 
-    // Simpan ke Supabase agar tersinkronisasi di perangkat lain
-    await supabase
+    // Simpan ke Supabase
+    const { error } = await supabase
       .from('user_settings')
-      .upsert({ telegram_id: String(user.id), saldo_awal: nominal }, { onConflict: 'telegram_id' });
+      .upsert(
+        { telegram_id: String(user.id), saldo_awal: nominal, updated_at: new Date().toISOString() },
+        { onConflict: 'telegram_id' }
+      );
+
+    if (error) {
+      console.error('Gagal simpan ke Supabase:', error);
+      alert('⚠️ Gagal menyinkronkan saldo ke cloud Supabase!');
+    } else {
+      alert('✅ Saldo berhasil disimpan & disinkronkan!');
+    }
 
     setIsEditingSaldo(false);
     setInputSaldo('');
@@ -98,12 +107,10 @@ export default function Page() {
     }
   };
 
-  // Jika user belum login, tampilkan LoginForm
   if (!user) {
     return <LoginForm onLogin={login} />;
   }
 
-  // Kalkulasi data dashboard
   const now = new Date();
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
@@ -128,7 +135,6 @@ export default function Page() {
     <div className="min-h-screen bg-gray-100 w-full max-w-[1400px] mx-auto relative pb-28 shadow-xl font-sans text-gray-900">
       <div className="bg-white min-h-screen p-4 sm:p-8 lg:p-12 pb-24">
         
-        {/* Header User */}
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="FinTraces Logo" className="w-10 h-10 object-contain rounded-xl" />
