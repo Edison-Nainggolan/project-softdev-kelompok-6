@@ -100,7 +100,7 @@ export default function Page() {
     setInputSaldo('');
   };
 
- const handleAddGoal = async (newGoal) => {
+  const handleAddGoal = async (newGoal) => {
     const payload = {
       telegram_id: String(user.id),
       title: newGoal.title,
@@ -121,6 +121,22 @@ export default function Page() {
       setSavingGoals((prev) => [...prev, data[0]]);
       setIsAddingGoal(false);
       alert('✅ Target tabungan berhasil ditambahkan!');
+    }
+  };
+
+  const handleDeleteGoal = async (id) => {
+    if (!confirm('Yakin ingin menghapus target tabungan ini?')) return;
+
+    const { error } = await supabase
+      .from('saving_goals')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      setSavingGoals((prev) => prev.filter((item) => item.id !== id));
+    } else {
+      console.error('Error delete goal:', error);
+      alert('⚠️ Gagal menghapus target tabungan!');
     }
   };
 
@@ -196,6 +212,7 @@ export default function Page() {
               onNavigateTab={setActiveTab}
               onDeleteTransaction={handleDeleteTransaction}
               onOpenAddGoal={() => setIsAddingGoal(true)}
+              onDeleteGoal={handleDeleteGoal}
             />
           )}
 

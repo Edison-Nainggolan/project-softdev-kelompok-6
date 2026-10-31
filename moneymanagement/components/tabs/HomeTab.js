@@ -7,7 +7,7 @@ import TransactionCard from '../TransactionCard';
 export default function HomeTab({ 
   amanJajanHariIni, sisaHari, totalPengeluaran, transactions, 
   sisaSaldo, saldoAwal, dataChart, loading, savingGoals = [], 
-  onOpenEditSaldo, onNavigateTab, onDeleteTransaction, onOpenAddGoal 
+  onOpenEditSaldo, onNavigateTab, onDeleteTransaction, onOpenAddGoal, onDeleteGoal 
 }) {
   return (
     <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
@@ -69,7 +69,7 @@ export default function HomeTab({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-        {/* Target Tabungan Dinamis */}
+        {/* Target Tabungan Dinamis + Fitur Hapus */}
         <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-gray-900">🎯 Target Tabungan Saya</h3>
@@ -95,8 +95,17 @@ export default function HomeTab({
 
                 return (
                   <div key={goal.id} className="space-y-1.5 border-b border-gray-200 pb-3 last:border-none last:pb-0">
-                    <div className="flex justify-between text-xs font-semibold text-gray-800">
-                      <span className="truncate max-w-[130px]" title={goal.title}>{goal.title}</span>
+                    <div className="flex justify-between items-center text-xs font-semibold text-gray-800">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate max-w-[110px]" title={goal.title}>{goal.title}</span>
+                        <button
+                          onClick={() => onDeleteGoal(goal.id)}
+                          className="text-gray-400 hover:text-red-600 text-[11px] transition-colors"
+                          title="Hapus Target"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                       <span className="text-gray-500 font-normal text-[11px]">
                         Rp{currentVal.toLocaleString('id-ID')} / Rp{targetVal.toLocaleString('id-ID')}
                       </span>
