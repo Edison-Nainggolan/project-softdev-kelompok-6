@@ -10,6 +10,7 @@ import { getStandardCategory } from '../lib/utils';
 import BottomNav from '../components/BottomNav';
 import LoginForm from '../components/LoginForm';
 import EditSaldoModal from '../components/EditSaldoModal';
+import EditSavingGoalModal from '../components/EditSavingGoalModal';
 
 // Import Tab Konten
 import HomeTab from '../components/tabs/HomeTab';
@@ -26,10 +27,9 @@ export default function Page() {
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
-  const [savingGoals] = useState([
-    { id: 1, title: 'Dana Darurat Kos', target: 500000, current: 350000 },
-    { id: 2, title: 'Beli Buku & Modul', target: 200000, current: 120000 },
-  ]);
+  // State Target Tabungan Dinamis
+  const [savingGoals, setSavingGoals] = useState([]);
+  const [isAddingGoal, setIsAddingGoal] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -37,7 +37,7 @@ export default function Page() {
     async function fetchData() {
       setLoading(true);
 
-      // 1. Ambil Saldo Awal via maybeSingle() agar aman jika data belum ada di Supabase
+      // 1. Ambil Saldo Awal dari Supabase
       const { data: settingData, error: settingError } = await supabase
         .from('user_settings')
         .select('saldo_awal')
@@ -51,7 +51,16 @@ export default function Page() {
         setSaldoAwal(savedSaldo !== null ? Number(savedSaldo) : 0);
       }
 
-      // 2. Ambil Data Transaksi
+      // 2. Ambil Target Tabungan dari Supabase
+      const { data: goalsData } = await supabase
+        .from('saving_goals')
+        .select('*')
+        .eq('telegram_id', String(user.id))
+        .order('created_at', { ascending: true });
+
+      setSavingGoals(goalsData || []);
+
+      // 3. Ambil Transaksi
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
@@ -73,7 +82,6 @@ export default function Page() {
     setSaldoAwal(nominal);
     localStorage.setItem(`saldo_awal_${user.id}`, nominal);
 
-    // Simpan ke Supabase
     const { error } = await supabase
       .from('user_settings')
       .upsert(
@@ -90,6 +98,22 @@ export default function Page() {
 
     setIsEditingSaldo(false);
     setInputSaldo('');
+  };
+
+  const handleAddGoal = async (newGoal) => {
+    const { data, error } = await supabase
+      .from('saving_goals')
+      .insert([{ ...newGoal, telegram_id: String(user.id) }])
+      .select();
+
+    if (!error && data) {
+      setSavingGoals((prev) => [...prev, data[0]]);
+      setIsAddingGoal(false);
+      alert('✅ Target tabungan berhasil ditambahkan!');
+    } else {
+      console.error('Error insert goal:', error);
+      alert('⚠️ Gagal menyimpan target tabungan!');
+    }
   };
 
   const handleDeleteTransaction = async (id) => {
@@ -163,6 +187,7 @@ export default function Page() {
               onOpenEditSaldo={() => { setInputSaldo(saldoAwal); setIsEditingSaldo(true); }}
               onNavigateTab={setActiveTab}
               onDeleteTransaction={handleDeleteTransaction}
+              onOpenAddGoal={() => setIsAddingGoal(true)}
             />
           )}
 
@@ -197,6 +222,14 @@ export default function Page() {
             setInputSaldo={setInputSaldo}
             onSave={handleSaveSaldo}
             onClose={() => setIsEditingSaldo(false)}
+          />
+        )}
+
+        {isAddingGoal && (
+          <EditSavingGoalModal
+            onClose={() => setIsAddingGoal(false)}
+            onSave={handleAddGoal}
+            sisaSaldo={sisaSaldo}
           />
         )}
       </div>
