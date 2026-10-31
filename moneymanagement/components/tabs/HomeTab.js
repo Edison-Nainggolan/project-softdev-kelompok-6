@@ -6,8 +6,8 @@ import TransactionCard from '../TransactionCard';
 
 export default function HomeTab({ 
   amanJajanHariIni, sisaHari, totalPengeluaran, transactions, 
-  sisaSaldo, saldoAwal, dataChart, loading, savingGoals, 
-  onOpenEditSaldo, onNavigateTab, onDeleteTransaction 
+  sisaSaldo, saldoAwal, dataChart, loading, savingGoals = [], 
+  onOpenEditSaldo, onNavigateTab, onDeleteTransaction, onOpenAddGoal 
 }) {
   return (
     <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
@@ -69,27 +69,52 @@ export default function HomeTab({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+        {/* Target Tabungan Dinamis */}
         <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-bold text-gray-900">🎯 Target Tabungan Bulan Ini</h3>
-            <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md border border-blue-200">Impian</span>
+            <h3 className="text-sm font-bold text-gray-900">🎯 Target Tabungan Saya</h3>
+            <button 
+              onClick={onOpenAddGoal} 
+              className="text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md border border-blue-200 transition-colors"
+            >
+              + Tambah
+            </button>
           </div>
-          <div className="space-y-3">
-            {savingGoals.map((goal) => {
-              const percent = Math.min(100, Math.round((goal.current / goal.target) * 100));
-              return (
-                <div key={goal.id} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold text-gray-800">
-                    <span>{goal.title}</span>
-                    <span className="text-gray-500 font-normal">Rp{goal.current.toLocaleString('id-ID')} / Rp{goal.target.toLocaleString('id-ID')}</span>
+
+          {savingGoals.length === 0 ? (
+            <p className="text-xs text-gray-400 py-4 text-center">Belum ada target tabungan yang dibuat.</p>
+          ) : (
+            <div className="space-y-4">
+              {savingGoals.map((goal) => {
+                const currentVal = Number(goal.current || 0);
+                const targetVal = Number(goal.target || 1);
+                const percent = Math.min(100, Math.round((currentVal / targetVal) * 100));
+                const months = goal.target_months || 1;
+                const sisaKebutuhan = Math.max(0, targetVal - currentVal);
+                const perBulan = Math.ceil(sisaKebutuhan / months);
+
+                return (
+                  <div key={goal.id} className="space-y-1.5 border-b border-gray-200 pb-3 last:border-none last:pb-0">
+                    <div className="flex justify-between text-xs font-semibold text-gray-800">
+                      <span className="truncate max-w-[130px]" title={goal.title}>{goal.title}</span>
+                      <span className="text-gray-500 font-normal text-[11px]">
+                        Rp{currentVal.toLocaleString('id-ID')} / Rp{targetVal.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                      <div className="bg-neutral-800 h-2 rounded-full transition-all duration-300" style={{ width: `${percent}%` }}></div>
+                    </div>
+
+                    <div className="flex justify-between text-[10px] text-gray-400 pt-0.5">
+                      <span>{months === 1 ? 'Target Bulan Ini' : `${months} Bulan`} ({percent}%)</span>
+                      <span>~Rp{perBulan.toLocaleString('id-ID')}/bln</span>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div className="bg-neutral-800 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6 space-y-3">
