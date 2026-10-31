@@ -22,7 +22,7 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState('home');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [saldoAwal, setSaldoAwal] = useState(1500000);
+  const [saldoAwal, setSaldoAwal] = useState(0); // Default diubah ke 0
   const [isEditingSaldo, setIsEditingSaldo] = useState(false);
   const [inputSaldo, setInputSaldo] = useState('');
 
@@ -34,8 +34,13 @@ export default function Page() {
   useEffect(() => {
     if (!user?.id) return;
 
+    // Ambil saldo tersimpan atau tetapkan default Rp0
     const savedSaldo = localStorage.getItem(`saldo_awal_${user.id}`);
-    if (savedSaldo) setSaldoAwal(Number(savedSaldo));
+    if (savedSaldo !== null) {
+      setSaldoAwal(Number(savedSaldo));
+    } else {
+      setSaldoAwal(0);
+    }
 
     async function fetchTransactions() {
       setLoading(true);
