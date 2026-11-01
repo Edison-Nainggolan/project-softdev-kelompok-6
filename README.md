@@ -10,19 +10,19 @@ FinTraces (Financial Traces) adalah solusi pencatatan keuangan cerdas berbasis A
 
 Proyek ini dikembangkan sebagai **Final Project UKM Software Development (Softdev)** dengan fokus tema **Smart Student Productivity**.
 
-🔗 **Live Demo Dashboard:
-🤖 **Coba Bot Telegram:
+🔗 Live Demo Dashboard:
+🤖 Coba Bot Telegram:
 
 ---
 
-## ✨ Fitur Utama
+Fitur Utama
 
-- 🎙️ **AI Voice & Text Tracking:** Catat pengeluaran hanya dengan mengirim pesan suara (*voice note*) atau teks santai (contoh: *"Beli nasi padang 15 ribu"*). Model AI Groq (Whisper & Llama 3) akan melakukan ekstraksi data secara otomatis.
-- 📊 **Real-time Web Dashboard:** Sinkronisasi instan antara Telegram dan Dashboard Web. Dibangun dengan UI responsif (Mobile-first hingga Desktop layar lebar).
-- 🛡️ **Aman Jajan Hari Ini:** Kalkulator batas aman pengeluaran harian yang otomatis beradaptasi berdasarkan sisa saldo dan sisa hari dalam bulan tersebut.
-- 🎯 **Saving Goals & Budgeting:** Pantau target tabungan (seperti dana darurat) dan batas pengeluaran per kategori (Makanan, Transportasi, Kuliah, dll).
-- 🧠 **Smart Category Normalization:** AI dan algoritma normalisasi string memastikan setiap input kategori dari pengguna masuk ke dalam kelompok budget yang tepat secara presisi.
-- 📈 **Interactive Insights:** Visualisasi data pengeluaran mingguan menggunakan Recharts dan Donut Chart.
+- 🎙️ AI Voice & Text Tracking:** Catat pengeluaran hanya dengan mengirim pesan suara (*voice note*) atau teks santai (contoh: *"Beli nasi padang 15 ribu"*). Model AI Groq (Whisper & Llama 3) akan melakukan ekstraksi data secara otomatis.
+- 📊 Real-time Web Dashboard:Sinkronisasi instan antara Telegram dan Dashboard Web. Dibangun dengan UI responsif (Mobile-first hingga Desktop layar lebar).
+- 🛡️ Aman Jajan Hari Ini:** Kalkulator batas aman pengeluaran harian yang otomatis beradaptasi berdasarkan sisa saldo dan sisa hari dalam bulan tersebut.
+- 🎯 Saving Goals & Budgeting:** Pantau target tabungan (seperti dana darurat) dan batas pengeluaran per kategori (Makanan, Transportasi, Kuliah, dll).
+- 🧠 Smart Category Normalization:** AI dan algoritma normalisasi string memastikan setiap input kategori dari pengguna masuk ke dalam kelompok budget yang tepat secara presisi.
+- 📈 Interactive Insights:** Visualisasi data pengeluaran mingguan menggunakan Recharts dan Donut Chart.
 
 ---
 
@@ -54,7 +54,7 @@ Proyek ini dikembangkan sebagai **Final Project UKM Software Development (Softde
 
 ---
 
-## 🚀 Panduan Instalasi (Development)
+## Panduan Instalasi (Development)
 
 Jika ingin menjalankan proyek ini di komputer lokal, ikuti langkah-langkah berikut:
 
@@ -77,11 +77,9 @@ Buat file `.env.local` di *root directory* dan isi dengan kredensial berikut:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Telegram Bot Configuration
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 
 # Groq AI Configuration
-GROQ_API_KEY=your_groq_api_key
+GROQ_API_KEY=
 ```
 
 ### 4. Jalankan Server Development
