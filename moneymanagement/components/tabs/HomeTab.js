@@ -9,9 +9,16 @@ export default function HomeTab({
   sisaSaldo, saldoAwal, dataChart, loading, savingGoals = [], 
   onOpenEditSaldo, onNavigateTab, onDeleteTransaction, onOpenAddGoal, onDeleteGoal 
 }) {
+  // Ambil Bulan & Tahun secara otomatis dalam Bahasa Indonesia
+  const currentMonthYear = new Date().toLocaleDateString('id-ID', {
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
     <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
-      <h1 className="text-2xl md:text-3xl font-bold">Oktober 2026</h1>
+      {/* Judul Bulan & Tahun Dinamis */}
+      <h1 className="text-2xl md:text-3xl font-bold capitalize">{currentMonthYear}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gray-50 border border-gray-300 rounded-2xl p-6">
