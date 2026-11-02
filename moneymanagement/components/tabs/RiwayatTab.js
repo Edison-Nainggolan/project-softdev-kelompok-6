@@ -104,3 +104,4 @@ export default function RiwayatTab({ transactions = [], onResetData, onDeleteTra
     </motion.div>
   );
 }
+
