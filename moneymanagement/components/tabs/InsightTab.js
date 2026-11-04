@@ -18,43 +18,55 @@ export default function InsightTab({ transactions = [], saldoAwal = 0 }) {
   const weeklyTotals = { Sen: 0, Sel: 0, Rab: 0, Kam: 0, Jum: 0, Sab: 0, Min: 0 };
   let totalWeeklyExpenses = 0;
 
-  // Memastikan data berupa Array (menangani jika data terbungkus dalam object)
+  // Memastikan data berupa Array
   const txList = Array.isArray(transactions) 
     ? transactions 
     : (transactions?.data || transactions?.transactions || []);
 
-  const todayKey = dayIndexToKey[new Date().getDay()];
+  const now = new Date();
+  
+  // Tentukan batas awal minggu ini (Senin)
+  const currentDay = now.getDay(); // 0 = Minggu, 1 = Senin, ...
+  const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - distanceToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
 
   txList.forEach((item) => {
     if (!item) return;
 
-    // Otomatis mengekstrak nominal dari berbagai variasi nama kolom
+    // MEMBACA KOLOM 'price' DARI SUPABASE
     const amount = Number(
-      item.amount ?? item.nominal ?? item.total ?? item.harga ?? item.biaya ?? 0
+      item.price || item.amount || item.nominal || item.total || item.harga || 0
     );
 
     if (amount <= 0) return;
 
-    // Otomatis mengekstrak tanggal
     const dateStr = item.created_at || item.date || item.tanggal;
-    let dayKey = todayKey;
-
+    
     if (dateStr) {
       const parsedDate = new Date(dateStr);
       if (!isNaN(parsedDate.getTime())) {
-        dayKey = dayIndexToKey[parsedDate.getDay()];
+        // Cek apakah transaksi terjadi dalam minggu ini
+        if (parsedDate >= startOfWeek) {
+          const dayKey = dayIndexToKey[parsedDate.getDay()];
+          if (weeklyTotals[dayKey] !== undefined) {
+            weeklyTotals[dayKey] += amount;
+          }
+        }
       }
     }
-
-    if (weeklyTotals[dayKey] !== undefined) {
-      weeklyTotals[dayKey] += amount;
-    }
+    
     totalWeeklyExpenses += amount;
   });
 
+  // Nilai maksimum untuk tinggi persentase grafik
   const maxExpense = Math.max(...Object.values(weeklyTotals), 1);
   const sisaSaldo = Math.max(0, Number(saldoAwal || 0) - totalWeeklyExpenses);
-  const amanJajanHarian = Math.round(sisaSaldo / 30);
+  
+  const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
+  const amanJajanHarian = Math.max(0, Math.floor(sisaSaldo / sisaHari));
 
   return (
     <motion.div key="insight" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
@@ -62,9 +74,9 @@ export default function InsightTab({ transactions = [], saldoAwal = 0 }) {
       {/* Ringkasan Grafik Mingguan */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
         <div>
-          <p className="text-xs text-gray-500 font-medium">Ringkasan mingguan</p>
+          <p className="text-xs text-gray-500 font-medium">Ringkasan minggu ini</p>
           <h2 className="text-2xl font-extrabold text-gray-900">
-            Rp{totalWeeklyExpenses.toLocaleString('id-ID')}
+            Rp{Object.values(weeklyTotals).reduce((a, b) => a + b, 0).toLocaleString('id-ID')}
           </h2>
         </div>
 
@@ -82,7 +94,7 @@ export default function InsightTab({ transactions = [], saldoAwal = 0 }) {
                     {d.key}: Rp{val.toLocaleString('id-ID')}
                   </div>
 
-                  {/* Tiang Abu-abu & Batang Biru Aktif */}
+                  {/* Tiang Abu-abu Background & Batang Biru Aktif */}
                   <div className="w-full bg-neutral-800/80 rounded-t-md h-24 flex items-end overflow-hidden relative">
                     <div
                       className="w-full bg-blue-500 rounded-t-md transition-all duration-500"
