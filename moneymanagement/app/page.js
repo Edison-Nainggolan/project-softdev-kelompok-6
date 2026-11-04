@@ -163,13 +163,13 @@ export default function Page() {
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const sisaHari = Math.max(1, totalDaysInMonth - now.getDate() + 1);
 
-  const totalPengeluaran = transactions.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
+  const totalPengeluaran = transactions.reduce((acc, item) => acc + (Number(item.price || item.nominal || item.amount) || 0), 0);
   const sisaSaldo = saldoAwal - totalPengeluaran;
   const amanJajanHariIni = sisaSaldo > 0 ? Math.floor(sisaSaldo / sisaHari) : 0;
 
   const kategoriStats = transactions.reduce((acc, item) => {
     const cat = getStandardCategory(item.category);
-    acc[cat] = (acc[cat] || 0) + (Number(item.price) || 0);
+    acc[cat] = (acc[cat] || 0) + (Number(item.price || item.nominal || item.amount) || 0);
     return acc;
   }, {});
 
@@ -234,6 +234,8 @@ export default function Page() {
 
           {activeTab === 'insight' && (
             <InsightTab
+              transactions={transactions}
+              saldoAwal={saldoAwal}
               totalPengeluaran={totalPengeluaran}
               sisaSaldo={sisaSaldo}
               amanJajanHariIni={amanJajanHariIni}
